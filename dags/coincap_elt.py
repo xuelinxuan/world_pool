@@ -7,19 +7,19 @@ import requests
 from airflow import DAG
 from airflow.decorators import task
 from airflow.operators.bash import BashOperator
-from cuallee import Check, CheckLevel
+# from cuallee import Check, CheckLevel   # <- 暂时注释掉，不然 Airflow import 会报错
 import polars as pl
 from airflow.operators.dummy import DummyOperator
 
 with DAG(
-    'coincap_elt',
+    dag_id='coincap_elt',
     description='A simple DAG to fetch data \
     from CoinCap Exchanges API and write to a file',
     schedule_interval=timedelta(days=1),
     start_date=datetime(2023, 1, 1),
     catchup=False,
 ) as dag:
-
+    
     url = "https://api.coincap.io/v2/exchanges"
     file_path = f'{os.getenv("AIRFLOW_HOME")}/data/coincap_exchanges.csv'
 
