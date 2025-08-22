@@ -1,0 +1,13 @@
+#安装git
+sudo yum install git -y   # Amazon Linux
+sudo apt-get update && sudo apt-get install git -y
+
+#克隆项目
+git clone https://github.com/xuelinxuan/world_pool.git
+cd world_pool/terraform
+
+#初始化
+terraform init
+
+#应用
+terraform apply
