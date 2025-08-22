@@ -1,30 +1,15 @@
 #region
 variable "aws_region" {default = "us-east-1"}
 
-## Key to allow connection to our EC2 instance
-variable "key_name" {
-  description = "EC2 key name"
-  type        = string
-  default     = "sde-key"
-}
+#Lambda
+variable "lambda_function_name" {default = "IGTIexecutaEMRaovivo"}
 
-## EC2 instance type
-variable "instance_type" {
-  description = "Instance type for EMR and EC2"
-  type        = string
-  default     = "m4.xlarge"
-}
+#SSH 
+variable "key_pair_name" {default = "ssh_ec2_instance"}
 
-## Alert email receiver
-variable "alert_email_id" {
-  description = "Email id to send alerts to "
-  type        = string
-  default     = "you-name@some-domain.com"
-}
+#subnet
+variable "airflow_subnet_id" {default = "subnet-08b465766ec396cde"}
 
-## Your repository url
-variable "repo_url" {
-  description = "Repository url to clone into production machine"
-  type        = string
-  default     = "https://github.com/josephmachado/data_engineering_project_template.git"
-}
+#vpc
+variable "vpc_id" {default = "vpc-06767fed36ee2d510"}
+
