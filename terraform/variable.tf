@@ -1,23 +1,23 @@
 #region
-variable "aws_region"    {default = "us-east-1"}
+variable "aws_region"       {default = "us-east-1"}
 
 #key_name_prefix 
-variable "key_name"      {default = "world_pool"}
+variable "key_name"         {default = "world_pool"}
 
 #instance
-variable "instance_type" {default = "t3.medium"}
+variable "instance_type"    {default = "t3.medium"}
 
 #alert email
-variable "alert_email_id"{default = "linxuanxue@gmail.com"}
+variable "alert_email_id"   {default = "linxuanxue@gmail.com"}
 
 #clone repositoy
-variable "repo_url"      {default = "https://github.com/xuelinxuan/world_pool.git"}
+variable "repo_url"         {default = "https://github.com/xuelinxuan/world_pool.git"}
 
 # AWS Access Key
-variable "access_key"    {default = "AKIAWDYU6IA6HRAXK7XW"}
+variable "aws_access_key"   {default = "AKIAWDYU6IA6HRAXK7XW"}
 
 # AWS Secret Key
-variable "secret_key"    {default = "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"}
+variable "aws_secret_key  " {default = "J8AOvV4C/JtXV+rYF8VqMa28RkHCYGw+AiC/PrD8"}
 
 
 
