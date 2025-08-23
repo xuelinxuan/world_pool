@@ -2,7 +2,7 @@
 variable "aws_region"    {default = "us-east-1"}
 
 #key_name_prefix 
-variable ="key_name"     {default = "world_pool"}
+variable "key_name"      {default = "world_pool"}
 
 #instance
 variable "instance_type" {default = "world_pool"}
