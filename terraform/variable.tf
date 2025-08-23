@@ -14,7 +14,7 @@ variable "repo_url"      {default = "https://github.com/xuelinxuan/world_pool.gi
 variable "alert_email_id"{default = "linxuanxue@gmail.com"}
 
 #Lambda
-variable "lambda_function_name" {default = "IGTIexecutaEMRaovivo"}
+#variable "lambda_function_name" {default = "IGTIexecutaEMRaovivo"}
 
 #SSH 
 #variable "key_pair_name" {default = "ssh_ec2_instance"}
