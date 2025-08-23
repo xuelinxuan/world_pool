@@ -14,3 +14,8 @@ terraform init
 
 #应用
 terraform apply
+
+#IAM 权限
+-data "aws_ami" "ubuntu",需要：
+AmazonEC2ReadOnlyAccess
+
