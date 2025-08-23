@@ -16,6 +16,6 @@ terraform init
 terraform apply
 
 #IAM 权限
--data "aws_ami" "ubuntu",需要：
+千万注意：iam 中有role 和personne(user)两个权限角色,角色就是本机管理员和使用者,ec2是用user 登录的
 AmazonEC2ReadOnlyAccess
 
