@@ -6,6 +6,9 @@ sudo apt-get update && sudo apt-get install git -y
 git clone https://github.com/xuelinxuan/world_pool.git
 cd world_pool/terraform
 
+#刷新
+git pull   # 拉取最新更新
+
 #初始化
 terraform init
 
