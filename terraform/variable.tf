@@ -7,11 +7,20 @@ variable "key_name"      {default = "world_pool"}
 #instance
 variable "instance_type" {default = "t3.medium"}
 
+#alert email
+variable "alert_email_id"{default = "linxuanxue@gmail.com"}
+
 #clone repositoy
 variable "repo_url"      {default = "https://github.com/xuelinxuan/world_pool.git"}
 
-#alert email
-variable "alert_email_id"{default = "linxuanxue@gmail.com"}
+# AWS Access Key
+variable "access_key"    {default = "AKIAWDYU6IA6HRAXK7XW"
+}
+
+# AWS Secret Key
+variable "secret_key"    {default = "J8AOvV4C/JtXV+rYF8VqMa28RkHCYGw+AiC/PrD8"}
+
+
 
 #Lambda
 #variable "lambda_function_name" {default = "IGTIexecutaEMRaovivo"}
