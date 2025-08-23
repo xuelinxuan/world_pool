@@ -14,8 +14,7 @@ variable "alert_email_id"{default = "linxuanxue@gmail.com"}
 variable "repo_url"      {default = "https://github.com/xuelinxuan/world_pool.git"}
 
 # AWS Access Key
-variable "access_key"    {default = "AKIAWDYU6IA6HRAXK7XW"
-}
+variable "access_key"    {default = "AKIAWDYU6IA6HRAXK7XW"}
 
 # AWS Secret Key
 variable "secret_key"    {default = "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"}
