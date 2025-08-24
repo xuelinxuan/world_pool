@@ -84,5 +84,6 @@ services:
       <<: *airflow-common-env
       _AIRFLOW_DB_UPGRADE: 'true'
       _AIRFLOW_WWW_USER_CREATE: 'true'
-      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-"linxuanxue@gmail.com"}
-      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-"753951753951UIo@"}
+      _AIRFLOW_WWW_USER_USERNAME: "linxuanxue@gmail.com"
+      _AIRFLOW_WWW_USER_PASSWORD: "753951753951UIo@"
+
