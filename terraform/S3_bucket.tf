@@ -1,3 +1,8 @@
+#terraform apply -target=aws_s3_bucket.datalake
+#terraform apply -target=aws_s3_object.folders  #注意里面如果没有东西必须用占位符
+
+
+
 # 创建 bucket
 resource "aws_s3_bucket" "datalake" {
   bucket = "world-pool-bucket-version-1"   # bucket 名必须全局唯一
