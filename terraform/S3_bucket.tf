@@ -22,13 +22,14 @@ resource "aws_s3_bucket" "datalake" {
 resource "aws_s3_object" "folders" {
   for_each = toset([
     "bronze/market/streaming/",
-    "bronze/fundamentals/",
-    "bronze/macro_economy/",
-    "silver/market/",
-    "silver/fundamentals/",
-    "silver/macro_economy/",
-    "gold/market/",
-    "gold/fundamentals/"
+    "bronze/fundamentals/streaming/",
+    "bronze/macro_economy/streaming/",
+    "silver/market/streaming/",
+    "silver/fundamentals/streaming/",
+    "silver/macro_economy/streaming/",
+    "gold/market/streaming/",
+    "gold/fundamentals/streaming/",
+    "gold/macro_economy/streaming/"
   ])
 
   bucket = aws_s3_bucket.datalake.bucket
