@@ -1,6 +1,6 @@
 # 创建 bucket
 resource "aws_s3_bucket" "datalake" {
-  bucket = "world-pool-bucket_version_1"   # bucket 名必须全局唯一
+  bucket = "world-pool-bucket-version-1"   # bucket 名必须全局唯一
   acl    = "private"
 
   tags = {
