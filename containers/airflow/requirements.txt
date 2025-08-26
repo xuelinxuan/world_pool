@@ -14,3 +14,5 @@ types-requests       ==2.32.0.20240602
 cuallee              ==0.10.3
 polars               ==0.20.31
 delta-spark          ==2.4.0
+pyspark              ==3.4.0
+
