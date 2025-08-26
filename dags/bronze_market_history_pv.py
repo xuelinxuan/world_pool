@@ -15,6 +15,9 @@ import pandas as pd
 
 os.environ['NO_PROXY'] = '*'  #request 不用代理环境
 
+paras= yahoo_pv(start='2020-01-01', end='2022-01-01', ticker='SPY', ticker_list = ['SPY', '510050.SS'])
+
+
 def market_history(**kwargs):
     paras= yahoo_pv(start='2020-01-01', end='2022-01-01', ticker='SPY', ticker_list = ['SPY', '510050.SS'])
     fc_json=paras.fc_json()
