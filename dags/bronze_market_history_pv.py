@@ -43,4 +43,4 @@ with DAG(
 
 
     # Set task dependencies
-    start >> [market_history_task, placeholder_daily,exchange_rate_placeholder]
+    start >> [market_history_task, placeholder_daily,placeholder_exchange_rate]
