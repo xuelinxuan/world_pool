@@ -20,9 +20,9 @@ paras= yahoo_pv(start='2020-01-01', end='2022-01-01', ticker='SPY', ticker_list 
 
 def market_history(**kwargs):
     paras= yahoo_pv(start='2020-01-01', end='2022-01-01', ticker='SPY', ticker_list = ['SPY', '510050.SS'])
-    fc_json=paras.fc_json()
+    ts_s_d_spk=paras.ts_s_d_spk()
     ti=kwargs['ti']  #kwargs['ti'] 固定实例化方法
-    ti.xcom_push(key='market_history_json', value=fc_json)
+    ti.xcom_push(key='market_history_sp', value=ts_s_d_spk())
 
 with DAG(
     dag_id='bronze_market',             # DAG 名称（在 Airflow UI 里显示）
@@ -38,7 +38,9 @@ with DAG(
         python_callable=market_history,
         provide_context=True )
 
-    placeholder = EmptyOperator(task_id='daily_placeholder')
+    placeholder_daily = EmptyOperator(task_id='daily_placeholder')
+    placeholder_exchange_rate=EmptyOperator(task_id='exchange_rate_placeholder')
+
 
     # Set task dependencies
-    start >> [market_history_task, placeholder]
+    start >> [market_history_task, placeholder,exchange_rate_placeholder]
