@@ -1,3 +1,4 @@
+
 from   airflow                      import DAG
 from   airflow.operators.python     import PythonOperator
 from   airflow.operators.empty      import EmptyOperator
@@ -5,7 +6,7 @@ from   datetime                     import datetime,date, timedelta
 from   pyspark.sql                  import SparkSession, functions as F
 from   delta.tables                 import DeltaTable
 from   utils.market_pv              import yahoo_pv, SaveS3_niveau_format
-import requests, time, os
+import requests, time, os,io
 
 import pandas as pd
 
