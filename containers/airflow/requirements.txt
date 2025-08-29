@@ -15,4 +15,7 @@ cuallee              ==0.10.3
 polars               ==0.20.31
 delta-spark          ==2.4.0
 pyspark              ==3.4.0
+boto3                ==1.34.106
+botocore             ==1.34.106
+
 
