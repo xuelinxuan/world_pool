@@ -1,4 +1,4 @@
-import requests, time, os, pytest, boto3
+import requests, time, os, pytest, boto3, io
 import yfinance    as yf
 import pandas      as pd
 from   datetime    import datetime
