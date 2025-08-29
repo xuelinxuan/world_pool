@@ -85,4 +85,29 @@ def data_clean(df,serie):
     data=sort.reset_index().set_index(['Date','ticker']).sort_index(level='Date',ascending=True)
     return data
 
+class SaveS3_niveau_format:
+    _aws_access_key_id     = "AKIAWDYU6IA6HRAXK7XW"
+    _aws_secret_access_key = "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"
+    _region_name           = "us-east-1"
+    _bucket                = "world-pool-bucket-version-1"
+
+    def __init__(self, niveau, format):
+        self.niveau   = niveau
+        self.format   = format
+        self.s3 = boto3.client(
+            "s3",
+            aws_access_key_id=self._aws_access_key_id,
+            aws_secret_access_key=self._aws_secret_access_key,
+            region_name=self._region_name
+        )
+
+    def name(self, df, filename):
+        holder = io.BytesIO()
+        df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
+        holder.seek(0)
+
+        key = f"{self.niveau}/market/{filename}.parquet"
+        self.s3.upload_fileobj(holder, self._bucket, key)
+        print(f"✅ Upload ok! s3://{self._bucket}/{key}")
+        return df
 
