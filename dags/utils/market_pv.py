@@ -101,15 +101,15 @@ class S3_save_extract:
             region_name=self._region_name
         )
 
-    def save(self, filename):
+    def save(self, df, filename):
         holder = io.BytesIO()
-        filename.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
+        df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
         holder.seek(0)
 
         key = f"{self.niveau}/market/{filename}.parquet"
         self.s3.upload_fileobj(holder, self._bucket, key)
         print(f"✅ Upload ok! s3://{self._bucket}/{key}")
-        return filename
+        return df
 
     def extract(self, filename):
         obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"bronze/market/{filename}.parquet")
