@@ -5,7 +5,7 @@ from   airflow.operators.empty      import EmptyOperator
 from   datetime                     import datetime,date, timedelta
 from   pyspark.sql                  import SparkSession, functions as F
 from   delta.tables                 import DeltaTable
-from   utils.market_pv              import data_clean, yahoo_pv, SaveS3_niveau_format
+from   utils.market_pv              import data_clean, yahoo_pv, S3_save_extract
 import requests, time, os,io
 import pandas as pd
 
@@ -18,7 +18,7 @@ today = date.today().strftime("%Y-%m-%d")
 yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 # # format_tppe:  parquet:None,snappy,gzip
-save_bronze_parquet=SaveS3_niveau_format(niveau="bronze",format=None)
+save_bronze_parquet=S3_save_extract(niveau="bronze",format=None)
 
 def cb_market_history_raw():
     paras = yahoo_pv(
