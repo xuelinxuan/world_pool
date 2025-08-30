@@ -19,7 +19,7 @@ def　clean(filename):
     return S3.clean(filename)
     
 with DAG(
-    dag_id='bronze_market',             # DAG 名称（在 Airflow UI 里显示）
+    dag_id='clean_market',             # DAG 名称（在 Airflow UI 里显示）
     schedule_interval=None,  #手动  #'*/5 * * * *',  每 5 分钟运行一次  # 每天跑一次'@daily',   
     start_date=datetime(2023, 1, 1),        # DAG 生效开始日期
     catchup=False                           # 不补跑历史数据
