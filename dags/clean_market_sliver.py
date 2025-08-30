@@ -14,7 +14,7 @@ import pandas as pd
 
 os.environ['NO_PROXY'] = '*'  #request 不用代理环境
 
-def　clean(filename):
+def clean(filename):
     S3=S3_save_extract("bronze", None)
     return S3.clean(filename)
     
