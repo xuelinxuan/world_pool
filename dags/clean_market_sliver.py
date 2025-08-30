@@ -29,22 +29,22 @@ with DAG(
 
     clean_cb_market_history_raw   = PythonOperator(
         task_id         ='clean_cb_market_history_raw',
-        python_callable = lambda: extract("cb_market_history_raw"),
+        python_callable = lambda: clean("cb_market_history_raw"),
         )
 
     clean_cb_market_daily_raw     = PythonOperator(
         task_id         ='clean_cb_market_daily_raw',
-        python_callable = lambda: extract("cb_market_daily_raw"),
+        python_callable = lambda: clean("cb_market_daily_raw"),
         )
 
     clean_cb_currency_history_raw = PythonOperator(
         task_id         ='clean_cb_currency_history_raw',
-        python_callable = lambda: extract("cb_currency_history_raw"),
+        python_callable = lambda: clean("cb_currency_history_raw"),
          )
 
     clean_cb_currency_daily_raw   = PythonOperator(
         task_id         ='clean_cb_currency_daily_raw',
-        python_callable = lambda: extract("cb_currency_daily_raw"),
+        python_callable = lambda: clean("cb_currency_daily_raw"),
         )
 
     end = EmptyOperator(task_id='end')
