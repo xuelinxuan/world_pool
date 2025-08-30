@@ -45,16 +45,16 @@ def cb_currency_daily_raw():
     return df.shape[0]
     
 S3=S3_save_extract("bronze", None)
-# extract_cb_market_history_raw    =
-# extract_cb_currency_history_raw  =
+extract_cb_market_history_raw    =S3.extract(cb_market_history_raw)
+extract_cb_currency_history_raw  =S3.extract(cb_currency_history_raw)
 
 def market_history_currency_callable():
-    return market_currency(S3.extract(cb_market_history_raw), S3.extract(cb_currency_history_raw))
+    return market_currency(extract_cb_market_history_raw,extract_cb_currency_history_raw)
 
-# extract_cb_market_daily_raw      =
-# extract_cb_currency_daily_raw    =)
+extract_cb_market_daily_raw      =S3.extract(cb_market_daily_raw)
+extract_cb_currency_daily_raw    =S3.extract(cb_currency_daily_raw)
 def market_daily_currency_callable():  
-    return market_currency(S3.extract(cb_market_daily_raw), S3.extract(cb_currency_daily_raw)
+    return market_currency(extract_cb_market_daily_raw, extract_cb_currency_daily_raw)
 
 
 with DAG(dag_id='market_pv',   schedule_interval=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
