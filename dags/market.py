@@ -63,14 +63,11 @@ with DAG(dag_id='market_pv',   schedule_interval=None, start_date=datetime(2023,
     cb_currency_history_raw_task      = PythonOperator(task_id='cb_currency_history_raw',         python_callable = cb_currency_history_raw,provide_context = True)
     market_history_currency_task      = PythonOperator(task_id='market_history_currency',         python_callable = market_history_currency_callable,provide_context = True)
 
-    
     cb_market_daily_raw_task          = PythonOperator(task_id='cb_market_daily_raw',             python_callable = cb_market_daily_raw,    provide_context =True)
     cb_currency_daily_raw_task        = PythonOperator(task_id='cb_currency_daily_raw',           python_callable = cb_currency_daily_raw,  provide_context = True)
     market_daily_currency_task        = PythonOperator(task_id='market_daily_currency',           python_callable = market_daily_currency_callable,provide_context = True)
 
     end   = EmptyOperator(task_id="end")
-
-
 
     # Set task dependencies
     start >> [
