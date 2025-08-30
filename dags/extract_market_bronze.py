@@ -26,7 +26,7 @@ def cb_market_history_raw():
         ticker='510050.SS', ticker_list=['SPY', '510050.SS']
     )
     df = paras.cb_market()
-    save_bronze_parquet.save(df, "cb_market_history_raw")
+    save_bronze_parquet.save(cb_market_history_raw)
     return df.shape[0]
 
 def cb_market_daily_raw():
@@ -35,7 +35,7 @@ def cb_market_daily_raw():
         ticker='SPY', ticker_list=['SPY', '510050.SS']
     )
     df = paras.cb_market()
-    save_bronze_parquet.save(df, "cb_market_daily_raw")
+    save_bronze_parquet.save(dcb_market_daily_raw")
     return df.shape[0]
 
 def cb_currency_history_raw():
@@ -44,7 +44,7 @@ def cb_currency_history_raw():
         ticker='CNY=X', ticker_list=['CNY=X', 'EURCHF=X']
     )
     df = paras.cb_currency()
-    save_bronze_parquet.save(df, "cb_currency_history_raw")
+    save_bronze_parquet.save(cb_currency_history_raw)
     return df.shape[0]
 
 def cb_currency_daily_raw():
@@ -53,7 +53,7 @@ def cb_currency_daily_raw():
         ticker='CNY=X', ticker_list=['CNY=X', 'EURCHF=X']
     )
     df = paras.cb_currency()
-    save_bronze_parquet.save(df, "cb_currency_daily_raw")
+    save_bronze_parquet.save(cb_currency_daily_raw)
     return df.shape[0]
 
 with DAG(
