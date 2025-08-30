@@ -16,7 +16,7 @@ os.environ['NO_PROXY'] = '*'  #request 不用代理环境
 
 def clean(filename):
     S3=S3_save_extract("bronze", None)
-    return S3.clean(filename)
+    return S3.extract(filename)
     
 with DAG(
     dag_id='clean_market',             # DAG 名称（在 Airflow UI 里显示）
