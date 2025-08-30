@@ -44,7 +44,7 @@ def cb_currency_daily_raw():
     save_bronze_parquet.save( df,'cb_currency_daily_raw')
     return df.shape[0]
     
-def clean(filename):
+def extract(filename):
     S3=S3_save_extract("bronze", None)
     return S3.extract(filename)
 
@@ -65,7 +65,7 @@ with DAG(dag_id='market_pv',   schedule_interval=None, start_date=datetime(2023,
     cb_currency_daily_raw_task      = PythonOperator(task_id='cb_currency_daily_raw',           python_callable = cb_currency_daily_raw,  provide_context = True)
     extract_cb_currency_daily_raw   = PythonOperator(task_id='extract_cb_currency_daily_raw',   python_callable = lambda: extract("cb_currency_daily_raw"))
 
-    market_history_currency       = PythonOperator(task_id='cb_market_history_raw',         python_callable = cb_market_history_raw,  provide_context = True)
+    # market_history_currency         = PythonOperator(task_id='cb_market_history_raw',           python_callable = cb_market_history_raw,  provide_context = True)
 
     # Set task dependencies
     [cb_market_history_raw_task   >> extract_cb_market_history_raw,
