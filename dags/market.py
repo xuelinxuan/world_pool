@@ -44,14 +44,11 @@ def cb_currency_daily_raw():
     save_bronze_parquet.save( df,'cb_currency_daily_raw')
     return df.shape[0]
     
-
-
 def market_history_currency_callable():
     S3=S3_save_extract("bronze", None)
     extract_cb_market_history_raw    =S3.extract(cb_market_history_raw)
     extract_cb_currency_history_raw  =S3.extract(cb_currency_history_raw)
     return market_currency(extract_cb_market_history_raw,extract_cb_currency_history_raw)
-
 
 def market_daily_currency_callable():  
     S3=S3_save_extract("bronze", None)
@@ -59,25 +56,16 @@ def market_daily_currency_callable():
     extract_cb_currency_daily_raw    =S3.extract(cb_currency_daily_raw)
     return market_currency(extract_cb_market_daily_raw, extract_cb_currency_daily_raw)
 
-
 with DAG(dag_id='market_pv',   schedule_interval=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
     start = EmptyOperator(task_id="yahoo_market")
 
     cb_market_history_raw_task        = PythonOperator(task_id='cb_market_history_raw',           python_callable = cb_market_history_raw,  provide_context = True)
-    # extract_cb_market_history_raw   = PythonOperator(task_id='extract_cb_market_history_raw',   python_callable = lambda: extract("cb_market_history_raw"))
-
     cb_currency_history_raw_task      = PythonOperator(task_id='cb_currency_history_raw',         python_callable = cb_currency_history_raw,provide_context = True)
-    # extract_cb_currency_history_raw = PythonOperator(task_id='extract_cb_currency_history_raw', python_callable = lambda: extract("cb_currency_history_raw"))
-
     market_history_currency_task      = PythonOperator(task_id='market_history_currency',         python_callable = market_history_currency_callable,provide_context = True)
 
     
     cb_market_daily_raw_task          = PythonOperator(task_id='cb_market_daily_raw',             python_callable = cb_market_daily_raw,    provide_context =True)
-    # extract_cb_market_daily_raw     = PythonOperator(task_id='extract_cb_market_daily_raw',     python_callable = lambda: extract("cb_market_daily_raw"))
-    
     cb_currency_daily_raw_task        = PythonOperator(task_id='cb_currency_daily_raw',           python_callable = cb_currency_daily_raw,  provide_context = True)
-    # extract_cb_currency_daily_raw   = PythonOperator(task_id='extract_cb_currency_daily_raw',   python_callable = lambda: extract("cb_currency_daily_raw"))
-
     market_daily_currency_task        = PythonOperator(task_id='market_daily_currency',           python_callable = market_daily_currency_callable,provide_context = True)
 
     end   = EmptyOperator(task_id="end")
