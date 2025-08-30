@@ -85,7 +85,7 @@ def data_clean(df,serie):
     data=sort.reset_index().set_index(['Date','ticker']).sort_index(level='Date',ascending=True)
     return data
 
-class SaveS3_niveau_format:
+class S3_save_extract:
     _aws_access_key_id     = "AKIAWDYU6IA6HRAXK7XW"
     _aws_secret_access_key = "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"
     _region_name           = "us-east-1"
@@ -101,13 +101,31 @@ class SaveS3_niveau_format:
             region_name=self._region_name
         )
 
-    def name(self, df, filename):
+    def save(self, df):
         holder = io.BytesIO()
         df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
         holder.seek(0)
 
-        key = f"{self.niveau}/market/{filename}.parquet"
+        key = f"{self.niveau}/market/{df}.parquet"
         self.s3.upload_fileobj(holder, self._bucket, key)
         print(f"✅ Upload ok! s3://{self._bucket}/{key}")
         return df
+        
+    def save(self, file_name):
+        holder = io.BytesIO()
+        file_name.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
+        holder.seek(0)
+
+        key = f"{self.niveau}/market/{df}.parquet"
+        self.s3.upload_fileobj(holder, self._bucket, key)
+        print(f"✅ Upload ok! s3://{self._bucket}/{key}")
+        return df
+        
+    def (self, file_name):
+        obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"bronze/market/{file_name}")
+        df = pd.read_parquet(io.BytesIO(obj['Body'].read()))
+        print(f"✅ Loaded {file_name}, shape={df.shape}")
+        return df
+
+
 
