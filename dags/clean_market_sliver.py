@@ -14,9 +14,9 @@ import pandas as pd
 
 os.environ['NO_PROXY'] = '*'  #request 不用代理环境
 
-def extract(filename):
+def　clean(filename):
     S3=S3_save_extract("bronze", None)
-    return S3.extract(filename)
+    return S3.clean(filename)
     
 with DAG(
     dag_id='bronze_market',             # DAG 名称（在 Airflow UI 里显示）
@@ -27,27 +27,27 @@ with DAG(
 
     start = EmptyOperator(task_id='start')
 
-    extract_cb_market_history_raw   = PythonOperator(
-        task_id         ='extract_cb_market_history_raw',
+    clean_cb_market_history_raw   = PythonOperator(
+        task_id         ='clean_cb_market_history_raw',
         python_callable = lambda: extract("cb_market_history_raw"),
         )
 
-    extract_cb_market_daily_raw     = PythonOperator(
-        task_id         ='extract_cb_market_daily_raw',
+    clean_cb_market_daily_raw     = PythonOperator(
+        task_id         ='clean_cb_market_daily_raw',
         python_callable = lambda: extract("cb_market_daily_raw"),
         )
 
-    extract_cb_currency_history_raw = PythonOperator(
-        task_id         ='extract_cb_currency_history_raw',
+    clean_cb_currency_history_raw = PythonOperator(
+        task_id         ='clean_cb_currency_history_raw',
         python_callable = lambda: extract("cb_currency_history_raw"),
          )
 
-    extract_cb_currency_daily_raw   = PythonOperator(
-        task_id         ='extract_cb_currency_daily_raw',
+    clean_cb_currency_daily_raw   = PythonOperator(
+        task_id         ='clean_cb_currency_daily_raw',
         python_callable = lambda: extract("cb_currency_daily_raw"),
         )
 
     end = EmptyOperator(task_id='end')
 
     # Set task dependencies
-    start >> [extract_cb_market_history_raw, extract_cb_market_daily_raw, extract_cb_currency_history_raw, extract_cb_currency_daily_raw]>> end
+    start >> [clean_cb_market_history_raw, clean_cb_market_daily_raw, clean_cb_currency_history_raw, clean_cb_currency_daily_raw]>> end
