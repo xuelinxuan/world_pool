@@ -35,7 +35,7 @@ def cb_market_daily_raw():
         ticker='SPY', ticker_list=['SPY', '510050.SS']
     )
     df = paras.cb_market()
-    save_bronze_parquet.save(cb_market_daily_raw")
+    save_bronze_parquet.save(cb_market_daily_raw)
     return df.shape[0]
 
 def cb_currency_history_raw():
