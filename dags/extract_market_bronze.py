@@ -18,7 +18,7 @@ today = date.today().strftime("%Y-%m-%d")
 yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 # # format_tppe:  parquet:None,snappy,gzip
-save_bronze_parquet=SaveS3_niveau_format(niveau="bronze",format=None)
+save_bronze_parquet=S3_save_extract(niveau="bronze",format=None)
 
 def cb_market_history_raw():
     paras = yahoo_pv(
