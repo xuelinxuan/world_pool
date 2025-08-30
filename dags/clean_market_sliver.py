@@ -14,13 +14,6 @@ import pandas as pd
 
 os.environ['NO_PROXY'] = '*'  #request 不用代理环境
 
-today = date.today().strftime("%Y-%m-%d")
-yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-
-# # format_tppe:  parquet:None,snappy,gzip
-extract=S3_save_extract(niveau="bronze",format=None)
-
-
 def extract(filename):
     S3=S3_save_extract("bronze", None)
     return S3.extract(filename)
@@ -34,22 +27,22 @@ with DAG(
 
     start = EmptyOperator(task_id='start')
 
-    cb_market_history_raw_task   = PythonOperator(
+    extract_cb_market_history_raw   = PythonOperator(
         task_id         ='extract_cb_market_history_raw',
         python_callable = lambda: extract("cb_market_history_raw"),
         )
 
-    cb_market_daily_raw_task     = PythonOperator(
+    extract_cb_market_daily_raw     = PythonOperator(
         task_id         ='extract_cb_market_daily_raw',
         python_callable = lambda: extract("cb_market_daily_raw"),
         )
 
-    cb_currency_history_raw_task = PythonOperator(
+    extract_cb_currency_history_raw = PythonOperator(
         task_id         ='extract_cb_currency_history_raw',
         python_callable = lambda: extract("cb_currency_history_raw"),
          )
 
-    cb_currency_daily_raw_task   = PythonOperator(
+    extract_cb_currency_daily_raw   = PythonOperator(
         task_id         ='extract_cb_currency_daily_raw',
         python_callable = lambda: extract("cb_currency_daily_raw"),
         )
@@ -57,4 +50,4 @@ with DAG(
     end = EmptyOperator(task_id='end')
 
     # Set task dependencies
-    start >> [cb_market_history_raw_task, cb_market_daily_raw_task, cb_currency_history_raw_task, cb_currency_daily_raw_task]>> end
+    start >> [extract_cb_market_history_raw, extract_cb_market_daily_raw, extract_cb_currency_history_raw, extract_cb_currency_daily_raw]>> end
