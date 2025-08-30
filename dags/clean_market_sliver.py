@@ -18,44 +18,13 @@ today = date.today().strftime("%Y-%m-%d")
 yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 
 # # format_tppe:  parquet:None,snappy,gzip
-save_bronze_parquet=S3_save_extract(niveau="bronze",format=None)
+extract=S3_save_extract(niveau="bronze",format=None)
 
-def cb_market_history_raw():
-    paras = yahoo_pv(
-        start='2020-01-01', end='2022-01-01',
-        ticker='510050.SS', ticker_list=['SPY', '510050.SS']
-    )
-    df = paras.cb_market()
-    save_bronze_parquet.name(df, "cb_market_history_raw")
-    return df.shape[0]
 
-def cb_market_daily_raw():
-    paras = yahoo_pv(
-        start=yesterday, end=today,
-        ticker='SPY', ticker_list=['SPY', '510050.SS']
-    )
-    df = paras.cb_market()
-    save_bronze_parquet.name(df, "cb_market_daily_raw")
-    return df.shape[0]
-
-def cb_currency_history_raw():
-    paras = yahoo_pv(
-        start='2020-01-01', end='2022-01-01',
-        ticker='CNY=X', ticker_list=['CNY=X', 'EURCHF=X']
-    )
-    df = paras.cb_currency()
-    save_bronze_parquet.name(df, "cb_currency_history_raw")
-    return df.shape[0]
-
-def cb_currency_daily_raw():
-    paras = yahoo_pv(
-        start=yesterday, end=today,
-        ticker='CNY=X', ticker_list=['CNY=X', 'EURCHF=X']
-    )
-    df = paras.cb_currency()
-    save_bronze_parquet.name(df, "cb_currency_daily_raw")
-    return df.shape[0]
-
+def extract(filename):
+    S3=S3_save_extract("bronze", None)
+    return S3.extract(filename)
+    
 with DAG(
     dag_id='bronze_market',             # DAG 名称（在 Airflow UI 里显示）
     schedule_interval=None,  #手动  #'*/5 * * * *',  每 5 分钟运行一次  # 每天跑一次'@daily',   
@@ -66,23 +35,23 @@ with DAG(
     start = EmptyOperator(task_id='start')
 
     cb_market_history_raw_task   = PythonOperator(
-        task_id         ='cb_market_history_raw',
-        python_callable = cb_market_history_raw,
+        task_id         ='extract_cb_market_history_raw',
+        python_callable = lambda: extract("cb_market_history_raw"),
         provide_context = True )
 
     cb_market_daily_raw_task     = PythonOperator(
-        task_id         ='cb_market_daily_raw',
-        python_callable = cb_market_daily_raw,
+        task_id         ='extract_cb_market_daily_raw',
+        python_callable = lambda: extract("cb_market_daily_raw),
         provide_context =True )
 
     cb_currency_history_raw_task = PythonOperator(
-        task_id         ='cb_currency_history_raw',
-        python_callable = cb_currency_history_raw,
+        task_id         ='extract_cb_currency_history_raw',
+        python_callable = lambda: extract("cb_currency_history_raw),
         provide_context = True )
 
     cb_currency_daily_raw_task   = PythonOperator(
-        task_id         ='cb_currency_daily_raw',
-        python_callable = cb_currency_daily_raw,
+        task_id         ='extract_cb_currency_daily_raw',
+        python_callable = lambda: extract("cb_currency_daily_raw),
         provide_context = True )
 
     end = EmptyOperator(task_id='end')
