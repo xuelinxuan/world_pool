@@ -21,7 +21,7 @@ yesterday = (date.today() - timedelta(days=1)).strftime("%Y-%m-%d")
 save_bronze_parquet=S3_save_extract(niveau="bronze",format=None)
 
 def cb_market_history_raw():
-        paras = yahoo_pv(start='2020-01-01', end='2022-01-01',ticker='510050.SS', ticker_list=['SPY', '510050.SS'])
+    paras = yahoo_pv(start='2020-01-01', end='2022-01-01',ticker='510050.SS', ticker_list=['SPY', '510050.SS'])
     df = paras.cb_market()
     save_bronze_parquet.save(df,'cb_market_history_raw')
     return df.shape[0]
