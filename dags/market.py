@@ -70,16 +70,9 @@ with DAG(dag_id='market_pv',   schedule_interval=None, start_date=datetime(2023,
     end   = EmptyOperator(task_id="end")
 
     # Set task dependencies
-    start >> [
-    cb_market_history_raw_task,
-    cb_currency_history_raw_task,
-    cb_market_daily_raw_task,
-    cb_currency_daily_raw_task,
-    ]
-
+    start >> [cb_market_history_raw_task,cb_currency_history_raw_task,cb_market_daily_raw_task,cb_currency_daily_raw_task,]
     # 2) 两两汇合到计算任务
     [cb_market_history_raw_task, cb_currency_history_raw_task] >> market_history_currency_task
     [cb_market_daily_raw_task,   cb_currency_daily_raw_task]   >> market_daily_currency_task
-    
     # 3) （可选）两个计算完成后 → end
     [market_history_currency_task, market_daily_currency_task] >> end
