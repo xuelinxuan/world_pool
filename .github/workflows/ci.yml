@@ -1,4 +1,4 @@
-name: CICD 🚀
+name: CI
 
 permissions:
   id-token: write #常见于部署到云，比如 AWS
