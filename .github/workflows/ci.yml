@@ -1,13 +1,97 @@
-# Note: Uncomment to start CI
-# name: CI
-# on: [pull_request]
-# jobs:
-#   run-ci-tests:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: checkout repo
-#         uses: actions/checkout@v2
-#       - name: Spin up containers
-#         run: make up
-#       - name: Run CI test
-#         run: make ci
+name: CICD 🚀
+
+permissions:
+  id-token: write #常见于部署到云，比如 AWS
+  contents: read
+
+on:
+  push:
+    branches:
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+      - production
+    types: [ opened, reopened, edited, synchronize ]
+
+jobs:
+  gitflow-enforcer:
+    name: GitFlow Enforcer 👮‍
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch
+        if: github.base_ref == 'main' && github.head_ref != 'dev' || github.base_ref == 'production' && github.head_ref != 'main'
+        run: |
+          echo "ERROR: You can only merge to main from dev and to production from main"
+          exit 1
+  test-dags:
+    name: Test Airflow DAGs 🧪
+    needs: gitflow-enforcer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v2
+
+      - uses: astral-sh/setup-uv@v5
+        name: Setup uv  #一个比 pip 更快的 Python 包管理工具
+        with:
+          python-version: 3.11
+      
+      - name: Run uv sync
+        run: uv sync --all-groups  #相当于 pip install -r requirements.txt，
+
+      # - name: Test Airflow DAGs
+      #   run: |
+      #     export AIRFLOW_HOME=/tmp
+      #     uv run airflow db migrate
+      #     uv run pytest
+  
+  # define-environment:
+  #   name: Set ✨ environment ✨
+  #   needs: [gitflow-enforcer, test-dags]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Set the environment based on the branch
+  #       id: define_environment
+  #       run: |
+  #         if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+  #           echo "env_name=development" >> $GITHUB_OUTPUT
+  #         fi
+  #     - name: Print the environment
+  #       run: echo "The environment is ${{ steps.define_environment.outputs.env_name }}"
+
+  #   outputs:
+  #     env_name: ${{ steps.define_environment.outputs.env_name }}
+
+  # deploy:
+  #   name: Deploy to ${{ needs.define-environment.outputs.env_name }} 🚀
+  #   runs-on: ubuntu-latest
+  #   if: ${{ needs.define-environment.outputs.env_name }}
+  #   needs: [gitflow-enforcer, define-environment]
+  #   environment: ${{ needs.define-environment.outputs.env_name }}
+  #   concurrency: ${{ needs.define-environment.outputs.env_name }}
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 #v3.6.0
+  #       with:
+  #         lfs: "true"
+  #         submodules: "recursive"
+
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 #v2.2.0
+  #       with:
+  #         role-to-assume: ${{ secrets.DEPLOYMENT_ROLE_ARN }}
+  #         role-session-name: "veda-airflow-github-${{ needs.define-environment.outputs.env_name }}-deployment"
+  #         aws-region: us-west-2
+
+  #     - name: Run SM2A deployment
+  #       # Flag to deploy SM2A
+  #       if: ${{ vars.DEPLOY_SM2A }} = "true"
+  #       uses: "./.github/actions/terraform-deploy-sm2a"
+  #       with:
+  #         dir: .
+  #         env_aws_secret_name: ${{ vars.SM2A_ENVS_DEPLOYMENT_SECRET_NAME }}
+  #         env-file: .env
+  #         aws-region: us-west-2
