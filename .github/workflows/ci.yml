@@ -38,9 +38,13 @@ jobs:
         name: Setup uv  #一个比 pip 更快的 Python 包管理工具
         with:
           python-version: 3.11
+
+      - name: Install deps
+        run: uv pip install -r requirements.txt
+  
       
-      - name: Run uv sync
-        run: uv sync --all-groups  #相当于 pip install -r requirements.txt，
+      # - name: Run uv sync
+      #   run: uv sync --all-groups  #使用pyproject.toml
 
       # - name: Test Airflow DAGs
       #   run: |
