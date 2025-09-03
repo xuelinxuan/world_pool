@@ -14,6 +14,7 @@ on:
       - dev
       - production
     types: [ opened, reopened, edited, synchronize ]
+  workflow_dispatch:  #手动触发
 
 jobs:
   gitflow-enforcer:
