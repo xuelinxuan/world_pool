@@ -29,11 +29,11 @@ def pytest_configure(config):
         os.environ[key] = value
         print('updating: ', key, value)
 
-    # ⭐ 关键补充：禁用 Airflow 自带的 example DAGs，并指定 dags 目录
-    dags_dir = Path(__file__).resolve().parents[1] / "dags"
-    os.environ["AIRFLOW__CORE__LOAD_EXAMPLES"] = "False"
-    os.environ["AIRFLOW__CORE__DAGS_FOLDER"] = str(dags_dir)
-    print("Airflow DAGs folder set to:", dags_dir)
+    # # ⭐ 关键补充：禁用 Airflow 自带的 example DAGs，并指定 dags 目录
+    # dags_dir = Path(__file__).resolve().parents[1] / "dags"
+    # os.environ["AIRFLOW__CORE__LOAD_EXAMPLES"] = "False"
+    # os.environ["AIRFLOW__CORE__DAGS_FOLDER"] = str(dags_dir)
+    # print("Airflow DAGs folder set to:", dags_dir)
 
 
 
