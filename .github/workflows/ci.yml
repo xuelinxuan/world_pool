@@ -18,7 +18,7 @@ on:
 
 jobs:
   gitflow-enforcer:
-    name: GitFlow Enforcer 👮‍
+    name: I.GitFlow Enforcer 
     runs-on: ubuntu-latest
     steps:
       - name: Check branch
@@ -27,7 +27,7 @@ jobs:
           echo "ERROR: You can only merge to main from dev and to production from main"
           exit 1
   test-dags:
-    name: Test Airflow DAGs 🧪
+    name: II.Test Airflow DAGs 
     needs: gitflow-enforcer
     runs-on: ubuntu-latest
     steps:
