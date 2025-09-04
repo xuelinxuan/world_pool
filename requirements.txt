@@ -10,7 +10,7 @@ yoyo-migrations      ==8.2.0
 duckdb               ==1.0.0
 plotly               ==5.22.0
 jupyter              ==1.0.0
-types-requests       ==2.32.0.20240602
+types-requests       ==2.32.0.20240712
 cuallee              ==0.10.3
 polars               ==0.20.31
 delta-spark          ==3.5.1
