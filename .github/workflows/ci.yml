@@ -39,14 +39,18 @@ jobs:
         with:
           python-version: 3.11
 
-      - name: 3.Install deps
-        run: uv pip install -r requirements.txt
+      - name: 3.Install uv + airflow
+        run: |
+          AF=2.9.3
+          PY=3.11
+          CONSTRAINT="https://raw.githubusercontent.com/apache/airflow/constraints-${AF}/constraints-${PY}.txt"
+          uv pip install "apache-airflow==${AF}" --constraint "$CONSTRAINT"
+          uv pip install -r requirements.txt --constraint "$CONSTRAINT"
   
-      
       # - name: Run uv sync
       #   run: uv sync --all-groups  #使用pyproject.toml
 
-      - name: 4.Test Airflow DAGs
+      - name: 5.Test Airflow DAGs
         run: |
           export AIRFLOW_HOME=/tmp
           uv run airflow db migrate #把uv装的东西放到 指定的地方
