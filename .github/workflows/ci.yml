@@ -31,15 +31,15 @@ jobs:
     needs: gitflow-enforcer
     runs-on: ubuntu-latest
     steps:
-      - name: Check out Git repository
+      - name: 1.Check out Git repository
         uses: actions/checkout@v2
 
-      - uses: astral-sh/setup-uv@v5
+      - uses: 2.astral-sh/setup-uv@v5
         name: Setup uv  #一个比 pip 更快的 Python 包管理工具
         with:
           python-version: 3.11
 
-      - name: Install deps
+      - name: 3.Install deps
         run: uv pip install -r requirements.txt
   
       
