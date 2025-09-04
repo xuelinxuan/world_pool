@@ -53,6 +53,7 @@ jobs:
       - name: 4.Test Airflow DAGs
         run: |
           export AIRFLOW_HOME=/tmp
+          export PYTHONPATH="$PWD/dags"   # 👈 在这里写
           uv run airflow db migrate #把uv装的东西放到 指定的地方
           uv run pytest
   
