@@ -1,6 +1,6 @@
 """Test integrity of dags."""
 
-import sys
+# import sys
 import os
 import pytest
 import importlib
