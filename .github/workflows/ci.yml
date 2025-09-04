@@ -34,8 +34,8 @@ jobs:
       - name: 1.Check out Git repository
         uses: actions/checkout@v2
 
-      - uses: 2.astral-sh/setup-uv@v5
-        name: Setup uv  #一个比 pip 更快的 Python 包管理工具
+      - name: 2.Setup uv  #一个比 pip 更快的 Python 包管理工具
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: 3.11
 
