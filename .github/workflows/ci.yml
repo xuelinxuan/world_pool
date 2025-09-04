@@ -50,7 +50,7 @@ jobs:
       # - name: Run uv sync
       #   run: uv sync --all-groups  #使用pyproject.toml
 
-      - name: 5.Test Airflow DAGs
+      - name: 4.Test Airflow DAGs
         run: |
           export AIRFLOW_HOME=/tmp
           uv run airflow db migrate #把uv装的东西放到 指定的地方
