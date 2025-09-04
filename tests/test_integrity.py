@@ -1,9 +1,11 @@
 """Test integrity of dags."""
-import importlib
-from pathlib import Path
+
+import sys
 import os
 import pytest
+import importlib
 
+from pathlib                        import Path
 from os.path                        import dirname  #directory
 from airflow.models                 import DagBag
 from airflow                        import models as af_models
