@@ -15,7 +15,7 @@ DAG_FILES = [f for f in os.listdir(DAG_PATH) if f.endswith('.py')]
 
 @pytest.fixture()
 def dag_bag():
-    return DagBag(dag_folder="dags/veda_data_pipeline", include_examples=False)
+    return DagBag(dag_folder=DAG_PATH, include_examples=False)  #不加载 airflow 自带的exmple dags
 
 
 @pytest.mark.parametrize('dag_file', DAG_FILES)
