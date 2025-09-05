@@ -57,22 +57,22 @@ jobs:
           uv run airflow db migrate #把uv装的东西放到 指定的地方
           uv run pytest
   
-  # define-environment:
-  #   name: Set ✨ environment ✨
-  #   needs: [gitflow-enforcer, test-dags]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Set the environment based on the branch
-  #       id: define_environment
-  #       run: |
-  #         if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
-  #           echo "env_name=development" >> $GITHUB_OUTPUT
-  #         fi
-  #     - name: Print the environment
-  #       run: echo "The environment is ${{ steps.define_environment.outputs.env_name }}"
+  define-environment:
+    name: II.Set environment 
+    needs: [gitflow-enforcer, test-dags]
+    runs-on: ubuntu-latest
+    steps:
+      - name: 1.Set the environment based on the branch
+        id: define_environment
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+            echo "env_name=development" >> $GITHUB_OUTPUT
+          fi
+      - name: 2.Print the environment
+        run: echo "The environment is ${{ steps.define_environment.outputs.env_name }}"
 
-  #   outputs:
-  #     env_name: ${{ steps.define_environment.outputs.env_name }}
+    outputs:
+      env_name: ${{ steps.define_environment.outputs.env_name }}
 
   # deploy:
   #   name: Deploy to ${{ needs.define-environment.outputs.env_name }} 🚀
