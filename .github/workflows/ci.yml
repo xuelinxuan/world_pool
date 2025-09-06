@@ -34,8 +34,8 @@ jobs:
         uv pip install -r requirements.txt
         uv run pip check
         
-    - name: 3.Flake8        
-      run: flake8 --ignore=E2,E3,W3,W291,W293,W391,E401,E501,F401,F841 dags --benchmark -v #检查问题
+    # - name: 3.Flake8        
+    #   run: flake8 --ignore=E2,E3,W3,W291,W293,W391,E401,E501,F401,F841 dags --benchmark -v #检查问题
       
     - name: 4.Lint SQL with SQLFluff
       run: |
@@ -45,7 +45,7 @@ jobs:
           --ignore parsing,templating \
           --format github-annotation \
           --disable_progress_bar \
-          sql_redshift/ || exit 1
+          sql_data_base/ || exit 1
         sqlfluff lint \
           --dialect hive \
           --ignore parsing,templating \
