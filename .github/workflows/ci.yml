@@ -61,30 +61,26 @@ jobs:
 
 ############################################################ airflow ############################################################
 
-  test-dags:
-    name: II.Test Airflow DAGs 
-    runs-on: ubuntu-latest
-    steps:
-      - name: 1.Check out Git repository
-        uses: actions/checkout@v2
+    # - name: 1.Check out Git repository
+    #   uses: actions/checkout@v2
 
-      - name: 2.Setup uv  #一个比 pip 更快的 Python 包管理工具
-        uses: astral-sh/setup-uv@v5
-        with:
-          python-version: 3.11
-          
-      - name: 3.Install uv + airflow
-        run: |
-          AF=2.9.3
-          PY=3.11
-          CONSTRAINT="https://raw.githubusercontent.com/apache/airflow/constraints-${AF}/constraints-${PY}.txt"
-          uv pip install "apache-airflow==${AF}" --constraint "$CONSTRAINT"
-          uv pip install -r requirements.txt --constraint "$CONSTRAINT"
-  
-      - name: 4.Test Airflow DAGs
-        run: |
-          export AIRFLOW_HOME=/tmp
-          export PYTHONPATH="$PWD/dags"   # 保证文件读取的指定路径
-          uv run airflow db migrate #把uv装的东西放到 指定的地方
-          uv run pytest
+    # - name: 2.Setup uv  #一个比 pip 更快的 Python 包管理工具
+    #   uses: astral-sh/setup-uv@v5
+    #   with:
+    #     python-version: 3.11
+        
+    - name: 6.Install uv + airflow
+      run: |
+        AF=2.9.3
+        PY=3.11
+        CONSTRAINT="https://raw.githubusercontent.com/apache/airflow/constraints-${AF}/constraints-${PY}.txt"
+        uv pip install "apache-airflow==${AF}" --constraint "$CONSTRAINT"
+        uv pip install -r requirements.txt --constraint "$CONSTRAINT"
+
+    - name: 7.Test Airflow DAGs
+      run: |
+        export AIRFLOW_HOME=/tmp
+        export PYTHONPATH="$PWD/dags"   # 保证文件读取的指定路径
+        uv run airflow db migrate #把uv装的东西放到 指定的地方
+        uv run pytest
 
