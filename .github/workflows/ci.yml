@@ -33,14 +33,12 @@ jobs:
       run: |
         uv pip install -r requirements.txt
         uv run pip check
-
-            #代码格式
+        
     - name: 3.pytest-black 
-      run: pytest dags --black -v
-              
-      #代码逻辑 
-    - name: 4.Flake8
-      run: flake8 --ignore E501 dags --benchmark -v
+      run: pytest dags --black -v #修复代码格式问题
+      
+    - name: 4.Flake8        
+      run: flake8 --ignore E501 dags --benchmark -v #检查问题
 
     - name: 5.Lint SQL with SQLFluff
       run: |
