@@ -18,7 +18,7 @@ on:
 ############################################################ python/sql/json ############################################################
 jobs:
   test_code:
-    name: I.Test_code
+    name: I.CI:Test_code
     runs-on: ubuntu-latest
     steps:
     - name: 0.Check out Git repository
