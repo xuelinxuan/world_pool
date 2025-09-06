@@ -24,8 +24,8 @@ jobs:
     - name: 0.Check out Git repository
       uses: actions/checkout@v4
 
-    - uses: 1.astral-sh/setup-uv@v5
-      name: Setup uv
+    - name: 1.Setup uv
+      uses: astral-sh/setup-uv@v5
       with:
         python-version: 3.11
     
@@ -41,7 +41,7 @@ jobs:
       run: pytest dags --black -v
         
     - name: 5.Lint SQL with SQLFluff
-      run: 
+      run: |
         pushd dags || exit
         sqlfluff lint \
           --dialect redshift \
