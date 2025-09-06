@@ -6,29 +6,79 @@ permissions:
 
 on:
   push:
-    branches:
-      - dev
+    paths:
+      - 'dags/**'
   pull_request:
     branches:
       - main
-      - dev
-      - production
-    types: [ opened, reopened, edited, synchronize ]
+    #   - dev
+    #   - production
+    # types: [ opened, reopened, edited, synchronize ]
   workflow_dispatch:  #手动触发
-
+############################################################ python/sql/json ############################################################
 jobs:
-  gitflow-enforcer:
-    name: I.GitFlow Enforcer 
+  test_code:
+    name: I.test_code
     runs-on: ubuntu-latest
     steps:
-      - name: Check branch
-        if: github.base_ref == 'main' && github.head_ref != 'dev' || github.base_ref == 'production' && github.head_ref != 'main'
-        run: |
-          echo "ERROR: You can only merge to main from dev and to production from main"
-          exit 1
+    - uses: actions/checkout@v2
+    - name: 1.Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+        
+    - name: 2.Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements/requirements.txt
+        pip check
+        
+      #代码逻辑 
+    - name: 3.Flake8
+      run: |
+        pip install flake8==4.0.1
+        flake8 --ignore E501 dags --benchmark -v
+
+      #代码格式
+    - name: 4.pytest-black 
+      run: |
+        pip install pytest-black==0.3.12
+        pytest dags --black -v
+        
+    # - name: Test DAGs with Pytest
+    #   run: |
+    #     pip install pytest==6.2.5
+    #     pushd tests || exit
+    #     python3 -m pytest tests.py -v || exit
+    #     popd || exit
+    
+    - name: 5.Lint SQL with SQLFluff
+      run: |
+        pip install sqlfluff==0.9.1 click==8.0.3
+        pushd dags || exit
+        sqlfluff lint \
+          --dialect redshift \
+          --ignore parsing,templating \
+          --format github-annotation \
+          --disable_progress_bar \
+          sql_redshift/ || exit 1
+        sqlfluff lint \
+          --dialect hive \
+          --ignore parsing,templating \
+          --format github-annotation \
+          --disable_progress_bar \
+          sql_data_lake/ || exit 1
+        popd || exit
+        
+    - name: 6.Validate JSON
+      run: |
+        python -m json.tool \
+          airflow_variables/variables.json || exit 1
+
+############################################################ airflow ############################################################
+
   test-dags:
     name: II.Test Airflow DAGs 
-    needs: gitflow-enforcer
     runs-on: ubuntu-latest
     steps:
       - name: 1.Check out Git repository
@@ -38,7 +88,7 @@ jobs:
         uses: astral-sh/setup-uv@v5
         with:
           python-version: 3.11
-
+          
       - name: 3.Install uv + airflow
         run: |
           AF=2.9.3
@@ -47,32 +97,31 @@ jobs:
           uv pip install "apache-airflow==${AF}" --constraint "$CONSTRAINT"
           uv pip install -r requirements.txt --constraint "$CONSTRAINT"
   
-      # - name: Run uv sync
-      #   run: uv sync --all-groups  #使用pyproject.toml
-
       - name: 4.Test Airflow DAGs
         run: |
           export AIRFLOW_HOME=/tmp
           export PYTHONPATH="$PWD/dags"   # 保证文件读取的指定路径
           uv run airflow db migrate #把uv装的东西放到 指定的地方
           uv run pytest
-  
-  define-environment:
-    name: II.Set environment 
-    needs: [gitflow-enforcer, test-dags]
-    runs-on: ubuntu-latest
-    steps:
-      - name: 1.Set the environment based on the branch
-        id: define_environment
-        run: |
-          if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
-            echo "env_name=development" >> $GITHUB_OUTPUT
-          fi
-      - name: 2.Print the environment
-        run: echo "The environment is ${{ steps.define_environment.outputs.env_name }}"
 
-    outputs:
-      env_name: ${{ steps.define_environment.outputs.env_name }}
+############################################################   sql   ############################################################
+  
+  # define-environment:
+  #   name: III.Set environment 
+  #   needs: [gitflow-enforcer, test-dags]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: 1.Set the environment based on the branch
+  #       id: define_environment
+  #       run: |
+  #         if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
+  #           echo "env_name=development" >> $GITHUB_OUTPUT
+  #         fi
+  #     - name: 2.Print the environment
+  #       run: echo "The environment is ${{ steps.define_environment.outputs.env_name }}"
+
+  #   outputs:
+  #     env_name: ${{ steps.define_environment.outputs.env_name }}
 
   # deploy:
   #   name: Deploy to ${{ needs.define-environment.outputs.env_name }} 🚀
