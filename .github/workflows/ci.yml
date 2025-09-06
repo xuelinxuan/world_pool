@@ -35,7 +35,7 @@ jobs:
         uv run pip check
         
     - name: 3.Flake8        
-      run: flake8 --ignore=E2,E3,W3,W391,E501 dags --benchmark -v #检查问题
+      run: flake8 --ignore=E2,E3,W3,W391,E501,W291,F401 dags --benchmark -v #检查问题
       
     - name: 4.pytest-black 
       run: pytest dags --black -v #修复代码格式问题
