@@ -3,7 +3,6 @@ name: CI
 permissions:
   id-token: write #常见于部署到云，比如 AWS
   contents: read
-
 on:
   push:
     paths:
@@ -11,9 +10,6 @@ on:
   pull_request:
     branches:
       - main
-    #   - dev
-    #   - production
-    # types: [ opened, reopened, edited, synchronize ]
   workflow_dispatch:  #手动触发
 ############################################################ python/sql/json ############################################################
 jobs:
@@ -58,17 +54,7 @@ jobs:
       run: |
         python -m json.tool \
           airflow_variables/variables.json || exit 1
-
-############################################################ airflow ############################################################
-
-    # - name: 1.Check out Git repository
-    #   uses: actions/checkout@v2
-
-    # - name: 2.Setup uv  #一个比 pip 更快的 Python 包管理工具
-    #   uses: astral-sh/setup-uv@v5
-    #   with:
-    #     python-version: 3.11
-        
+############################################################ airflow ############################################################      
     - name: 6.Install uv + airflow
       run: |
         AF=2.9.3
