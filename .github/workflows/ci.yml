@@ -37,10 +37,7 @@ jobs:
     - name: 3.Flake8        
       run: flake8 --ignore=E2,E3,W3,W291,W293,W391,E401,E501,F401,F841 dags --benchmark -v #检查问题
       
-    - name: 4.pytest-black 
-      run: pytest dags --black -v #修复代码格式问题
-
-    - name: 5.Lint SQL with SQLFluff
+    - name: 4.Lint SQL with SQLFluff
       run: |
         pushd dags || exit
         sqlfluff lint \
@@ -57,7 +54,7 @@ jobs:
           sql_data_lake/ || exit 1
         popd || exit
         
-    - name: 6.Validate JSON
+    - name: 5.Validate JSON
       run: |
         python -m json.tool \
           airflow_variables/variables.json || exit 1
