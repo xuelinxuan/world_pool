@@ -1,19 +1,18 @@
-"""Test integrity of dags."""
 import importlib
 import os
 import pytest
+from   os.path import dirname
+from   airflow.models import DagBag
+from   airflow import models as af_models
+from   airflow.utils.dag_cycle_tester import check_cycle
 
-from os.path import dirname
 
-from airflow.models import DagBag
-from airflow import models as af_models
-from airflow.utils.dag_cycle_tester import check_cycle
-
-DAG_PATH = os.path.join(
-    dirname(dirname(__file__)), 'dags/veda_data_pipeline'
-)
-
+DAG_PATH = "/home/runner/work/world_pool/world_pool/dags"
 DAG_FILES = [f for f in os.listdir(DAG_PATH) if f.endswith('.py')]
+
+@pytest.fixture()
+def dag_bag():
+    return DagBag(dag_folder=DAG_PATH, include_examples=False) 
 
 
 @pytest.fixture()
