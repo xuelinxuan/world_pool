@@ -21,42 +21,27 @@ jobs:
     name: I.test_code
     runs-on: ubuntu-latest
     steps:
-    - name: 0.Check out Git repository 
+    - name: 0.Check out Git repository
       uses: actions/checkout@v4
-      
-    - name: 1.Set up Python
-      uses: actions/setup-python@v5
+
+    - uses: 1.astral-sh/setup-uv@v5
+      name: Setup uv
       with:
-        python-version: '3.10' 
-        
-    - name: 2.Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements/requirements.txt
-        pip check
-        
+        python-version: 3.11
+    
+    - name: 2.Run uv sync
+      run: uv sync --all-groups
+              
       #代码逻辑 
     - name: 3.Flake8
-      run: |
-        pip install flake8==4.0.1
-        flake8 --ignore E501 dags --benchmark -v
+      run: flake8 --ignore E501 dags --benchmark -v
 
       #代码格式
     - name: 4.pytest-black 
-      run: |
-        pip install pytest-black==0.3.12
-        pytest dags --black -v
+      run: pytest dags --black -v
         
-    # - name: Test DAGs with Pytest
-    #   run: |
-    #     pip install pytest==6.2.5
-    #     pushd tests || exit
-    #     python3 -m pytest tests.py -v || exit
-    #     popd || exit
-    
     - name: 5.Lint SQL with SQLFluff
-      run: |
-        pip install sqlfluff==0.9.1 click==8.0.3
+      run: 
         pushd dags || exit
         sqlfluff lint \
           --dialect redshift \
@@ -106,53 +91,3 @@ jobs:
           uv run airflow db migrate #把uv装的东西放到 指定的地方
           uv run pytest
 
-############################################################   sql   ############################################################
-  
-  # define-environment:
-  #   name: III.Set environment 
-  #   needs: [gitflow-enforcer, test-dags]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: 1.Set the environment based on the branch
-  #       id: define_environment
-  #       run: |
-  #         if [ "${{ github.ref }}" = "refs/heads/dev" ]; then
-  #           echo "env_name=development" >> $GITHUB_OUTPUT
-  #         fi
-  #     - name: 2.Print the environment
-  #       run: echo "The environment is ${{ steps.define_environment.outputs.env_name }}"
-
-  #   outputs:
-  #     env_name: ${{ steps.define_environment.outputs.env_name }}
-
-  # deploy:
-  #   name: Deploy to ${{ needs.define-environment.outputs.env_name }} 🚀
-  #   runs-on: ubuntu-latest
-  #   if: ${{ needs.define-environment.outputs.env_name }}
-  #   needs: [gitflow-enforcer, define-environment]
-  #   environment: ${{ needs.define-environment.outputs.env_name }}
-  #   concurrency: ${{ needs.define-environment.outputs.env_name }}
-
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 #v3.6.0
-  #       with:
-  #         lfs: "true"
-  #         submodules: "recursive"
-
-  #     - name: Configure AWS Credentials
-  #       uses: aws-actions/configure-aws-credentials@5fd3084fc36e372ff1fff382a39b10d03659f355 #v2.2.0
-  #       with:
-  #         role-to-assume: ${{ secrets.DEPLOYMENT_ROLE_ARN }}
-  #         role-session-name: "veda-airflow-github-${{ needs.define-environment.outputs.env_name }}-deployment"
-  #         aws-region: us-west-2
-
-  #     - name: Run SM2A deployment
-  #       # Flag to deploy SM2A
-  #       if: ${{ vars.DEPLOY_SM2A }} = "true"
-  #       uses: "./.github/actions/terraform-deploy-sm2a"
-  #       with:
-  #         dir: .
-  #         env_aws_secret_name: ${{ vars.SM2A_ENVS_DEPLOYMENT_SECRET_NAME }}
-  #         env-file: .env
-  #         aws-region: us-west-2
