@@ -1,0 +1,71 @@
+name: CI/CD
+
+permissions:
+  id-token: write #常见于部署到云，比如 AWS
+  contents: read
+on:
+  push:
+    paths:
+      - 'dags/**'
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  #手动触发
+############################################################ 1.python/sql/json ############################################################
+jobs:
+  test_code:
+    name: CI test_code
+    runs-on: ubuntu-latest
+    steps:
+    - name: 0.Check out Git repository
+      uses: actions/checkout@v4
+
+    - name: 1.Setup uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        python-version: 3.11
+    
+    - name: 2.Install Python dependencies
+      run: |
+        uv pip install -r requirements.txt
+        uv run pip check
+        
+    - name: 3.Flake8        
+      run: flake8 --ignore=E2,E3,W3,W291,W293,W391,E401,E501,F401,F841 dags --benchmark -v #检查问题
+      
+    - name: 4.Lint SQL with SQLFluff
+      run: |
+        pushd dags || exit
+        sqlfluff lint \
+          --dialect redshift \
+          --ignore parsing,templating \
+          --format github-annotation \
+          --disable_progress_bar \
+          sql_data_base/ || exit 1
+        sqlfluff lint \
+          --dialect hive \
+          --ignore parsing,templating \
+          --format github-annotation \
+          --disable_progress_bar \
+          sql_data_lake/ || exit 1
+        popd || exit
+        
+    - name: 5.Validate JSON
+      run: |
+        python -m json.tool \
+          airflow_variables/variables.json || exit 1
+############################################################ 2.airflow ############################################################      
+    - name: 6.Install uv + airflow
+      run: |
+        AF=2.9.3
+        PY=3.11
+        CONSTRAINT="https://raw.githubusercontent.com/apache/airflow/constraints-${AF}/constraints-${PY}.txt"
+        uv pip install "apache-airflow==${AF}" --constraint "$CONSTRAINT"
+        uv pip install -r requirements.txt --constraint "$CONSTRAINT"
+
+    - name: 7.Test Airflow DAGs
+      run: |
+        export AIRFLOW_HOME=/tmp
+        export PYTHONPATH="$PWD/dags"   # 保证文件读取的指定路径
+        uv run airflow db migrate #把uv装的东西放到 指定的地方
+        uv run pytest
