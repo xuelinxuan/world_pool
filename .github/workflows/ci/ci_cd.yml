@@ -69,4 +69,3 @@ jobs:
         export PYTHONPATH="$PWD/dags"   # 保证文件读取的指定路径
         uv run airflow db migrate #把uv装的东西放到 指定的地方
         uv run pytest
-
