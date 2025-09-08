@@ -20,5 +20,24 @@ jobs:
     - name: 0.Check out Git repository
       uses: actions/checkout@v4
 
+    - name: 1.Configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region:            ${{ secrets.AWS_REGION }}
+
+    - name: 2.Start EC2 instance
+      run: |
+        aws ec2 start-instances         --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        #确认连接成功
+        aws ec2 wait instance-status-ok --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        echo "✅ EC2 instance is running"
+      
+
+    
+
+    
+
 
 
