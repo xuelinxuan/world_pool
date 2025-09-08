@@ -5,11 +5,16 @@ permissions:
   id-token: write
   contents: read
 
+# on:
+#   workflow_run:
+#     workflows: ["CI"]   # 必须和 CI workflow 的 name 完全一致
+#     types: [completed]
+#     branches: [main]       # 只有 main 上的 CI 完成才触发
+
 on:
-  workflow_run:
-    workflows: ["CI"]   # 必须和 CI workflow 的 name 完全一致
-    types: [completed]
-    branches: [main]       # 只有 main 上的 CI 完成才触发
+  workflow_dispatch:
+  push:
+    branches: [main]
 
 jobs:
   deploy:
