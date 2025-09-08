@@ -1,18 +1,24 @@
-# Note: Uncomment to start CD
-# name: CD
-# on:
-#   push:
-#     branches:
-#       - main
-# jobs:
-#   deploy-to-ec2:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Deploy to server
-#         uses: easingthemes/ssh-deploy@main
-#         env:
-#           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
-#           REMOTE_HOST: ${{ secrets.REMOTE_HOST }}
-#           REMOTE_USER: ${{ secrets.REMOTE_USER }}
-#           SOURCE: "./"
-#           TARGET: "/home/ubuntu/data_engineering_project_template"
+
+name: CD
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_run:
+    workflows: ["CI"]   # 必须和 CI workflow 的 name 完全一致
+    types: [completed]
+    branches: [main]       # 只有 main 上的 CI 完成才触发
+
+jobs:
+  deploy:
+    name: CD run_code
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # 仅当 CI 成功
+    runs-on: ubuntu-latest
+    steps:
+    - name: 0.Check out Git repository
+      uses: actions/checkout@v4
+
+
+
