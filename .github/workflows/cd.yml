@@ -19,7 +19,7 @@ on:
 jobs:
   deploy:
     name: II.CD run_code
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # 仅当 CI 成功
+    # if: ${{ github.event.workflow_run.conclusion == 'success' }}  # 仅当 CI 成功
     runs-on: ubuntu-latest
     steps:
     - name: 0.Check out Git repository
