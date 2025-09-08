@@ -34,6 +34,19 @@ jobs:
         #确认连接成功
         aws ec2 wait instance-status-ok --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
         echo "✅ EC2 instance is running"
+
+    - name: 3.Run Airflow 
+      run: |
+        CMD_ID=$(aws ssm send-command \
+          --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+          --document-name "AWS-RunShellScript" \
+          --comment "Start Airflow" \
+          --parameters 'commands=["cd /opt/airflow && docker-compose up -d"]' \
+          --query "Command.CommandId" --output text)
+        echo "SSM Command ID: $CMD_ID"
+        aws ssm wait command-executed \
+          --command-id "$CMD_ID" \
+          --instance-id ${{ secrets.EC2_INSTANCE_ID }}
       
 
     
