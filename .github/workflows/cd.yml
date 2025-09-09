@@ -75,19 +75,25 @@ jobs:
         AIRFLOW_USER: ${{ secrets.AIRFLOW_USER }}
         AIRFLOW_PASS: ${{ secrets.AIRFLOW_PASS }}
         DAG_ID      : market_pv
-
-  
       run: |
-        curl -X POST "http://${AIRFLOW_HOST}:8080/api/v1/dags/${DAG_ID}/dagRuns" \
+        set -euo pipefail
+    
+        # 1) 生成本次运行的 dag_run_id（自己可控，无需 URL 编码）
+        DAG_RUN_ID="manual__$(date -u +%s)"
+        echo "Triggering DAG: ${DAG_ID} with DAG_RUN_ID=${DAG_RUN_ID}"
+    
+        # 2) 触发 DAG
+        curl -fSs -X POST "http://${AIRFLOW_HOST}:8080/api/v1/dags/${DAG_ID}/dagRuns" \
           -H "Content-Type: application/json" \
           -u "${AIRFLOW_USER}:${AIRFLOW_PASS}" \
-          -d '{"dag_run_id": "manual__'$(date +%s)'","conf": {"key": "value"}}'
-
+          -d "{\"dag_run_id\": \"${DAG_RUN_ID}\", \"conf\": {\"key\": \"value\"}}"
+    
+        # 3) 轮询状态（每 50 秒查一次，最多 30 次 ≈ 25 分钟）
         for i in {1..30}; do
-          STATE=$(curl -s -u "${AIRFLOW_USER}:${AIRFLOW_PASS}" \
+          STATE=$(curl -fsS -u "${AIRFLOW_USER}:${AIRFLOW_PASS}" \
             "http://${AIRFLOW_HOST}:8080/api/v1/dags/${DAG_ID}/dagRuns/${DAG_RUN_ID}" | jq -r '.state')
     
-          echo "[$i] DAG run state: $STATE"
+          echo "[$i] DAG run state: ${STATE:-<no state>}"
           if [[ "$STATE" == "success" ]]; then
             echo "✅ DAG succeeded"
             exit 0
@@ -100,6 +106,7 @@ jobs:
     
         echo "⚠️ DAG timed out"
         exit 1
+
 
           
   
