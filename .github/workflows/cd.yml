@@ -68,7 +68,6 @@ jobs:
           --region ${{ secrets.AWS_REGION }} \
           --query '{Status:Status, StdOut:StandardOutputContent, StdErr:StandardErrorContent}' \
           --output json
-
     # - name: 2b) Find docker-compose.yml on EC2 (via SSM)
     #   run: |
     #     set -euo pipefail
