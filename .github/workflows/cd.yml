@@ -44,26 +44,35 @@ jobs:
       run: |
         set -euo pipefail
     
-        # 发送命令（workingDirectory 让 SSM 在 /opt/airflow 内执行）
         CMD_ID=$(aws ssm send-command \
           --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
           --document-name "AWS-RunShellScript" \
           --comment "Start Airflow via SSM" \
           --region ${{ secrets.AWS_REGION }} \
-          --parameters '{"workingDirectory":["/opt/airflow"],"commands":["set -e","(docker compose version >/dev/null 2>&1 && docker compose up -d) || (docker-compose up -d)","docker ps | grep -i airflow || true"]}' \
+          --parameters '{"workingDirectory":["/opt/airflow"],"commands":[
+            "set -e",
+            "echo ==== whoami && whoami",
+            "echo ==== id && id",
+            "echo ==== try start docker daemon",
+            "(systemctl start docker || sudo systemctl start docker || true)",
+            "echo ==== docker version",
+            "(docker --version || sudo docker --version || echo no-docker)",
+            "echo ==== compose version",
+            "(docker compose version || docker-compose --version || sudo docker compose version || sudo docker-compose --version || echo no-compose)",
+            "echo ==== launching compose ...",
+            "if docker compose version >/dev/null 2>&1; then (docker compose up -d || sudo docker compose up -d); else (docker-compose up -d || sudo docker-compose up -d); fi",
+            "echo ==== running containers",
+            "(docker ps || sudo docker ps) | grep -i airflow || true"
+          ]}' \
           --query "Command.CommandId" --output text)
     
         echo "SSM Command ID: $CMD_ID"
     
-        # 等待执行完成
         aws ssm wait command-executed \
           --command-id "$CMD_ID" \
           --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
           --region ${{ secrets.AWS_REGION }}
     
-    - name: Show SSM output (on failure)
-      if: failure()
-      run: |
         aws ssm get-command-invocation \
           --command-id "$CMD_ID" \
           --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
