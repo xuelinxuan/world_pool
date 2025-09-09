@@ -81,7 +81,7 @@ jobs:
         curl -X POST "http://${AIRFLOW_HOST}:8080/api/v1/dags/${DAG_ID}/dagRuns" \
           -H "Content-Type: application/json" \
           -u "${AIRFLOW_USER}:${AIRFLOW_PASS}" \
-          -d "{\"dag_run_id\": \"${DAG_RUN_ID}\"}"
+          -d '{"dag_run_id": "manual__'$(date +%s)'","conf": {"key": "value"}}'
 
         for i in {1..30}; do
           STATE=$(curl -s -u "${AIRFLOW_USER}:${AIRFLOW_PASS}" \
