@@ -41,44 +41,34 @@ jobs:
         aws ec2 wait instance-status-ok --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
         echo "✅ EC2 instance is running"
         
-    - name: 3.Run Airflow via SSM (robust + logs even on failure)
+    - name: 3.Run Airflow via SSM (prod, compose v2)
       run: |
         set -euo pipefail
     
         CMD_ID=$(aws ssm send-command \
           --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
           --document-name "AWS-RunShellScript" \
-          --comment "Start Airflow via SSM" \
+          --comment "Start Airflow via SSM (bash + compose v2)" \
           --region ${{ secrets.AWS_REGION }} \
-          --parameters '{"workingDirectory":["/opt/airflow"],"commands":[
-            "set -e",
-            "echo ==== whoami && whoami",
-            "echo ==== id && id",
-            "echo ==== try start docker daemon",
-            "(systemctl start docker || sudo systemctl start docker || true)",
-            "echo ==== docker version",
-            "(docker --version || sudo docker --version || echo no-docker)",
-            "echo ==== compose version",
-            "(docker compose version || docker-compose --version || sudo docker compose version || sudo docker-compose --version || echo no-compose)",
-            "echo ==== launching compose ...",
-            "if docker compose version >/dev/null 2>&1; then (docker compose up -d || sudo docker compose up -d); else (docker-compose up -d || sudo docker-compose up -d); fi",
-            "echo ==== running containers",
-            "(docker ps || sudo docker ps) | grep -i airflow || true"
+          --parameters '{"commands":[
+            "/bin/bash -lc '\''set -e; \
+              cd /opt/airflow; \
+              sudo systemctl start docker || true; \
+              sudo docker compose up -d; \
+              sudo docker compose ps'\''"
           ]}' \
           --query "Command.CommandId" --output text)
     
         echo "SSM Command ID: $CMD_ID"
     
-        # ⚠️ 等待时不要让失败直接终止脚本（否则拿不到日志）
+        # 即使失败也先拿日志
         set +e
         aws ssm wait command-executed \
           --command-id "$CMD_ID" \
           --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
           --region ${{ secrets.AWS_REGION }}
-        WAITER_RC=$?
         set -e
     
-        # 拉取 StdOut/StdErr
         OUT_JSON=$(aws ssm get-command-invocation \
           --command-id "$CMD_ID" \
           --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
@@ -87,13 +77,13 @@ jobs:
           --output json)
         echo "$OUT_JSON"
     
-        # 解析最终状态，显式控制成功/失败
         STATUS=$(echo "$OUT_JSON" | sed -n 's/.*"Status":[[:space:]]*"\([^"]*\)".*/\1/p')
         echo "Final SSM status: $STATUS"
         if [ "$STATUS" != "Success" ]; then
           echo "SSM command failed (status=$STATUS). See logs above."
           exit 1
         fi
+    
 
 
       
