@@ -41,27 +41,37 @@ jobs:
         aws ec2 wait instance-status-ok --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
         echo "✅ EC2 instance is running"
         
-    - name: 3.Run Airflow via SSM (prod, compose v2)
+    - name: 3.Run Airflow via SSM (debug, v1/v2; no-escape)
       run: |
         set -euo pipefail
+    
+        SCRIPT="/bin/bash -lc 'set -e; \
+          echo ==== whoami && whoami; \
+          echo ==== pwd && pwd; \
+          cd /opt/airflow; \
+          echo ==== try start docker; \
+          (systemctl start docker || sudo systemctl start docker || true); \
+          echo ==== docker version; \
+          (docker --version || sudo docker --version || echo no-docker); \
+          echo ==== compose version; \
+          (docker compose version || docker-compose --version || sudo docker compose version || sudo docker-compose --version || echo no-compose); \
+          echo ==== launching compose ...; \
+          if docker compose version >/dev/null 2>&1; then (docker compose up -d || sudo docker compose up -d); else (docker-compose up -d || sudo docker-compose up -d); fi; \
+          echo ==== running containers; \
+          (docker ps || sudo docker ps) | grep -i airflow || true'"
+    
+        jq -n --arg s "$SCRIPT" '{commands: [$s]}' > params.json
     
         CMD_ID=$(aws ssm send-command \
           --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
           --document-name "AWS-RunShellScript" \
-          --comment "Start Airflow via SSM (bash + compose v2)" \
+          --comment "Start Airflow via SSM (force bash, compat)" \
           --region ${{ secrets.AWS_REGION }} \
-          --parameters '{"commands":[
-            "/bin/bash -lc '\''set -e; \
-              cd /opt/airflow; \
-              sudo systemctl start docker || true; \
-              sudo docker compose up -d; \
-              sudo docker compose ps'\''"
-          ]}' \
+          --parameters file://params.json \
           --query "Command.CommandId" --output text)
     
         echo "SSM Command ID: $CMD_ID"
     
-        # 即使失败也先拿日志
         set +e
         aws ssm wait command-executed \
           --command-id "$CMD_ID" \
@@ -83,7 +93,6 @@ jobs:
           echo "SSM command failed (status=$STATUS). See logs above."
           exit 1
         fi
-    
 
 
       
