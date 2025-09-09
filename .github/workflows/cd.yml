@@ -33,7 +33,14 @@ jobs:
         aws-region:            ${{ secrets.AWS_REGION }}
 
 
+
     - name: 2.Start EC2 instance
+      run: |
+        aws ec2 start-instances         --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        #确认连接成功
+        aws ec2 wait instance-status-ok --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        echo "✅ EC2 instance is running"
+        
     - name: 3.Run Airflow via SSM (robust + logs even on failure)
       run: |
         set -euo pipefail
