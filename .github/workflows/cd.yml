@@ -61,7 +61,7 @@ jobs:
         set +e
         aws ssm wait command-executed --command-id "$CMD_ID" --instance-id ${{ secrets.EC2_INSTANCE_ID }} --region ${{ secrets.AWS_REGION }}
         set -e
-    
+        #display log
         aws ssm get-command-invocation \
           --command-id "$CMD_ID" \
           --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
