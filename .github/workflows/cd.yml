@@ -81,5 +81,25 @@ jobs:
         curl -X POST "http://${AIRFLOW_HOST}:8080/api/v1/dags/${DAG_ID}/dagRuns" \
           -H "Content-Type: application/json" \
           -u "${AIRFLOW_USER}:${AIRFLOW_PASS}" \
-          -d '{"dag_run_id": "manual__'$(date +%s)'","conf": {"key": "value"}}'
+          -d "{\"dag_run_id\": \"${DAG_RUN_ID}\"}"
+
+        for i in {1..30}; do
+          STATE=$(curl -s -u "${AIRFLOW_USER}:${AIRFLOW_PASS}" \
+            "http://${AIRFLOW_HOST}:8080/api/v1/dags/${DAG_ID}/dagRuns/${DAG_RUN_ID}" | jq -r '.state')
+    
+          echo "[$i] DAG run state: $STATE"
+          if [[ "$STATE" == "success" ]]; then
+            echo "✅ DAG succeeded"
+            exit 0
+          elif [[ "$STATE" == "failed" ]]; then
+            echo "❌ DAG failed"
+            exit 1
+          fi
+          sleep 10
+        done
+    
+        echo "⚠️ DAG timed out"
+        exit 1
+
+          
   
