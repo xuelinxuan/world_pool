@@ -58,7 +58,15 @@ jobs:
           sudo docker compose ps
         '"
         jq -n --arg s "$SCRIPT" '{commands: [$s]}' > params.json
-    
+
+        CMD_ID=$(aws ssm send-command \
+          --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
+          --document-name "AWS-RunShellScript" \
+          --comment "Start/Update Airflow (compose v2)" \
+          --region "${{ secrets.AWS_REGION }}" \
+          --parameters file://params.json \
+          --query "Command.CommandId" --output text)
+          
         echo "SSM Command ID: $CMD_ID"
     
         set +e
