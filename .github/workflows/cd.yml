@@ -51,7 +51,7 @@ jobs:
     
         jq -n --arg BR "${DAGS_BRANCH}" '{
           commands: [
-            "set -euo pipefail",
+            "set -eu",
             "cd /home/ubuntu/world_pool/dags",
             # 避免 root 下 git dubious ownership
             "git config --global --add safe.directory /home/ubuntu/world_pool/dags || true",
