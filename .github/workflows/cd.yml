@@ -74,7 +74,7 @@ jobs:
         AIRFLOW_HOST: ${{ secrets.AIRFLOW_HOST }}
         AIRFLOW_USER: ${{ secrets.AIRFLOW_USER }}
         AIRFLOW_PASS: ${{ secrets.AIRFLOW_PASS }}
-        DAG_ID      : market_pv
+        DAG_ID      : market_history
       run: |
         set -euo pipefail
     
