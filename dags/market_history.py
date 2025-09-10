@@ -41,7 +41,7 @@ def market_history_currency_callable():
     save_silver_parquet.save(df,'market_history_currency')
     return df.shape[0]
 
-with DAG(dag_id='market_history',   schedule=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
+with DAG(dag_id='market_history', schedule_interval=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
     start = EmptyOperator(task_id="yahoo_market")
 
     cb_market_history_raw_task        = cb_market_history_raw()
