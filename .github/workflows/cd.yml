@@ -42,22 +42,33 @@ jobs:
         echo "✅ EC2 instance is running"
 
     - name: 3.Setup Airflow via SSM
+      env:
+        DAGS_BRANCH: main 
       run: |
         set -euo pipefail
+
+        DAGS_BRANCH="${DAGS_BRANCH:-main}"
     
-        BRANCH="${BRANCH:-main}"
+        jq -n --arg BR "${DAGS_BRANCH}" '{
+          commands: [
+            "set -euo pipefail",
+            "cd /home/ubuntu/world_pool/dags",
+            # 避免 root 下 git dubious ownership
+            "git config --global --add safe.directory /home/ubuntu/world_pool/dags || true",
+            # 拉最新代码（用 --ff-only 防止产生合并提交；你也可改成 fetch/reset）
+            "git fetch --all --prune",
+            "git checkout --quiet " + $BR + " || true",
+            "git pull --ff-only origin " + $BR,
     
-        SCRIPT="/bin/bash -lc 'set -euo pipefail
-          cd /home/ubuntu/world_pool
-          git config --global --add safe.directory /home/ubuntu/world_pool || true
-          git fetch --all --prune
-          git reset --hard origin/${BRANCH}
-          sudo systemctl start docker || true
-          sudo docker compose pull || true
-          sudo docker compose up -d --remove-orphans
-          sudo docker compose ps
-        '"
-        jq -n --arg s "$SCRIPT" '{commands: [$s]}' > params.json
+            # 回到 compose 目录并启动/刷新容器
+            "cd /home/ubuntu/world_pool",
+            "sudo systemctl start docker || true",
+            "sudo docker compose up -d --remove-orphans",
+            "sudo docker compose ps"
+            ]
+          }' > params.json
+
+        # jq -n --arg s "$SCRIPT" '{commands: [$s]}' > params.json
 
         CMD_ID=$(aws ssm send-command \
           --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
@@ -68,17 +79,26 @@ jobs:
           --query "Command.CommandId" --output text)
           
         echo "SSM Command ID: $CMD_ID"
-    
+
+        # 1) 等待远端执行结束（即使失败也先别中断）
         set +e
-        aws ssm wait command-executed --command-id "$CMD_ID" --instance-id ${{ secrets.EC2_INSTANCE_ID }} --region ${{ secrets.AWS_REGION }}
-        set -e
-        #display log
+        aws ssm wait command-executed \
+          --command-id "$CMD_ID" \
+          --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+          --region "${{ secrets.AWS_REGION }}"
+        STATUS=$?     # 0=Success，非0=Failed/TimedOut/Canceled
+        set -e        # 2) 立刻恢复“遇错即停”
+        
+        # 3) 无论成功失败，都把远端日志取回来便于排查
         aws ssm get-command-invocation \
           --command-id "$CMD_ID" \
-          --instance-id ${{ secrets.EC2_INSTANCE_ID }} \
-          --region ${{ secrets.AWS_REGION }} \
+          --instance-id "${{ secrets.EC2_INSTANCE_ID }}" \
+          --region "${{ secrets.AWS_REGION }}" \
           --query '{Status:Status, StdOut:StandardOutputContent, StdErr:StandardErrorContent}' \
           --output json
+        
+        # 4) 用远端执行结果作为当前 step 的退出码
+        exit $STATUS
           
     - name: 4.Run Airflow dag
       env:
