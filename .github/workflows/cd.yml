@@ -45,25 +45,18 @@ jobs:
       run: |
         set -euo pipefail
     
-        # 目标分支可配置，默认 main
         BRANCH="${BRANCH:-main}"
     
         SCRIPT="/bin/bash -lc 'set -euo pipefail
           cd /home/ubuntu/world_pool
-    
-          # 避免 git 在 root 下报 dubious ownership（如无报错可去掉）
           git config --global --add safe.directory /home/ubuntu/world_pool || true
-    
-          # 拉最新代码
           git fetch --all --prune
           git reset --hard origin/${BRANCH}
-
-          # 启动/更新容器
           sudo systemctl start docker || true
           sudo docker compose pull || true
           sudo docker compose up -d --remove-orphans
           sudo docker compose ps
-    
+        '"
         jq -n --arg s "$SCRIPT" '{commands: [$s]}' > params.json
     
         echo "SSM Command ID: $CMD_ID"
