@@ -52,9 +52,12 @@ jobs:
         jq -n --arg BR "${DAGS_BRANCH}" '{
           commands: [
             "set -eu",
-            "cd /home/ubuntu/world_pool/dags",
+            "export HOME=/root",
+            
             # 避免 root 下 git dubious ownership
+            "git config --global --add safe.directory /home/ubuntu/world_pool || true",
             "git config --global --add safe.directory /home/ubuntu/world_pool/dags || true",
+            "cd /home/ubuntu/world_pool/dags",
             # 拉最新代码（用 --ff-only 防止产生合并提交；你也可改成 fetch/reset）
             "git fetch --all --prune",
             "git checkout --quiet " + $BR + " || true",
