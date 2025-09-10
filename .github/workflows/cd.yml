@@ -45,16 +45,26 @@ jobs:
       run: |
         set -euo pipefail
     
-        SCRIPT="/bin/bash -lc 'set -e; cd /home/ubuntu/world_pool; sudo systemctl start docker || true; sudo docker compose up -d; sudo docker compose ps'"
-        jq -n --arg s "$SCRIPT" '{commands: [$s]}' > params.json
+        # 目标分支可配置，默认 main
+        BRANCH="${BRANCH:-main}"
     
-        CMD_ID=$(aws ssm send-command \
-          --targets "Key=instanceIds,Values=${{ secrets.EC2_INSTANCE_ID }}" \
-          --document-name "AWS-RunShellScript" \
-          --comment "Start Airflow via SSM (compose v2)" \
-          --region ${{ secrets.AWS_REGION }} \
-          --parameters file://params.json \
-          --query "Command.CommandId" --output text)
+        SCRIPT="/bin/bash -lc 'set -euo pipefail
+          cd /home/ubuntu/world_pool
+    
+          # 避免 git 在 root 下报 dubious ownership（如无报错可去掉）
+          git config --global --add safe.directory /home/ubuntu/world_pool || true
+    
+          # 拉最新代码
+          git fetch --all --prune
+          git reset --hard origin/${BRANCH}
+
+          # 启动/更新容器
+          sudo systemctl start docker || true
+          sudo docker compose pull || true
+          sudo docker compose up -d --remove-orphans
+          sudo docker compose ps
+    
+        jq -n --arg s "$SCRIPT" '{commands: [$s]}' > params.json
     
         echo "SSM Command ID: $CMD_ID"
     
