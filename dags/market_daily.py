@@ -1,10 +1,10 @@
-
 from   airflow                      import DAG
 from   airflow.operators.python     import PythonOperator
 from   airflow.operators.empty      import EmptyOperator
 from   airflow.decorators           import task
 from   datetime                     import datetime, date, timedelta
 from   pyspark.sql                  import SparkSession, functions as F
+from   pyspark.sql.types            import StringType
 from   delta.tables                 import DeltaTable
 from   utils.market_pv              import market_currency, yahoo_pv, S3_save_extract
 import pandas                       as pd
@@ -47,10 +47,15 @@ def market_daily_currency_callable():
 
 @task
 def market_daily_upsert_history_currency():
-    spark           = SparkSession.builder.appName("market_daily_upsert_history_currency").getOrCreate()
+    spark = (SparkSession.builder.appName("market_daily_upsert_history_currency")
+    .config("spark.jars.packages", "org.apache.hadoop:hadoop-aws:3.3.4,com.amazonaws:aws-java-sdk-bundle:1.12.770")
+    .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+    .config("spark.hadoop.fs.s3a.aws.credentials.provider","com.amazonaws.auth.InstanceProfileCredentialsProvider,"  "com.amazonaws.auth.EnvironmentVariableCredentialsProvider")
+    .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com").getOrCreate())
+
     today           = date.today().strftime("%Y-%m-%d")
     DAILY_PATH      = f"s3a://world-pool-bucket-version-1/silver/market/streaming/{today}_market_daily_currency.parquet"
-    HIST_PATH       = "s3a://world-pool-bucket-version-1/silver/market/market_history_currency.parquet"
+    HIST_PATH       = "s3a://world-pool-bucket-version-1/silver/market/market_history_currency/"
     
     market_daily_sp = spark.read.parquet(DAILY_PATH)
     
