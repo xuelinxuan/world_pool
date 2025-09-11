@@ -1,7 +1,7 @@
 import requests, time, os, pytest, boto3, io, sys
 import yfinance    as yf
 import pandas      as pd
-from   datetime    import datetime
+from   datetime    import datetime, date, timedelta
 from   pyspark.sql import SparkSession, functions as F
 
 class yahoo_pv:
