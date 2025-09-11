@@ -130,13 +130,13 @@ jobs:
         echo "⚠️ DAG timed out"
         exit 1
 
-    # - name: 5.Stop EC2 instance
-    #   if: always()
-    #   run: |
-    #     echo "🛑 Stopping EC2 ${{ secrets.EC2_INSTANCE_ID }} ..."
-    #     aws ec2 stop-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
-    #     aws ec2 wait instance-stopped --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
-    #     echo "✅ EC2 instance stopped"
+    - name: 6.Stop EC2 instance
+      if: always()
+      run: |
+        echo "🛑 Stopping EC2 ${{ secrets.EC2_INSTANCE_ID }} ..."
+        aws ec2 stop-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        aws ec2 wait instance-stopped --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+        echo "✅ EC2 instance stopped"
 
 
 
