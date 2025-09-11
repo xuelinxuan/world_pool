@@ -6,7 +6,6 @@ from   datetime                     import datetime,date, timedelta
 from   pyspark.sql                  import SparkSession, functions as F
 from   delta.tables                 import DeltaTable
 from   utils.market_pv              import market_currency, yahoo_pv, S3_save_extract
-
 import pandas                       as pd
 import requests, time, os, io
 
