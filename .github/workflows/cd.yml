@@ -41,6 +41,16 @@ jobs:
         aws ec2 wait instance-status-ok --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
         echo "✅ EC2 instance is running"
 
+    - name: 3.Deploy DAGs to EC2 (SCP)
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host    : ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        key     : ${{ secrets.SSH_KEY }}        # 部署专用私钥
+        source  : dags/
+        target  : /home/ubuntu/world_pool/dags/
+
+
     - name: 3.Setup Airflow via SSM
       env:
         DAGS_BRANCH: main 
@@ -141,13 +151,13 @@ jobs:
         echo "⚠️ DAG timed out"
         exit 1
 
-    - name: 5.Stop EC2 instance
-      if: always()
-      run: |
-        echo "🛑 Stopping EC2 ${{ secrets.EC2_INSTANCE_ID }} ..."
-        aws ec2 stop-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
-        aws ec2 wait instance-stopped --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
-        echo "✅ EC2 instance stopped"
+    # - name: 5.Stop EC2 instance
+    #   if: always()
+    #   run: |
+    #     echo "🛑 Stopping EC2 ${{ secrets.EC2_INSTANCE_ID }} ..."
+    #     aws ec2 stop-instances --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+    #     aws ec2 wait instance-stopped --instance-ids ${{ secrets.EC2_INSTANCE_ID }}
+    #     echo "✅ EC2 instance stopped"
 
 
 
