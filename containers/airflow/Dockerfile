@@ -40,3 +40,21 @@ RUN pip install --no-cache-dir -r /requirements.txt
 # 如果你有不需要的脚本（比如之前的 quarto.sh），请删掉以下两行
 # COPY quarto.sh /quarto.sh
 # RUN bash /quarto.sh
+
+FROM apache/airflow:2.9.0-python3.11
+
+# 切到 root 用户才能装系统包
+USER root
+
+# 安装 OpenJDK 17（运行 Spark 必需）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      openjdk-17-jre-headless \
+    && rm -rf /var/lib/apt/lists/*
+
+# 设置 Java 环境变量（PySpark 会用到）
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ENV PATH="$JAVA_HOME/bin:${PATH}"
+
+# 切回 airflow 用户（避免权限问题）
+USER airflow
+
