@@ -94,6 +94,17 @@ class S3_save_extract:
         print(f"✅ Upload ok! s3://{self._bucket}/{key}")
         return df
 
+    def save_daily(self, df, filename):
+        holder = io.BytesIO()
+        df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
+        holder.seek(0)
+        today = date.today().strftime("%Y-%m-%d")
+        date_filename = f"{today}_{filename}"
+        key = f"{self.niveau}/market/streaming/{date_filename}.parquet"
+        self.s3.upload_fileobj(holder, self._bucket, key)
+        print(f"✅ Upload ok! s3://{self._bucket}/{key}")
+        return df
+
     def extract(self, filename):
         obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"bronze/market/{filename}.parquet")
         df = pd.read_parquet(io.BytesIO(obj['Body'].read()))
