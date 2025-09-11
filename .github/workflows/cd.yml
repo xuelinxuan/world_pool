@@ -4,12 +4,16 @@ name: CD
 permissions:
   id-token: write
   contents: read
+  
 
 # on:
 #   workflow_run:
 #     workflows: ["CI"]   # 必须和 CI workflow 的 name 完全一致
 #     types: [completed]
 #     branches: [main]       # 只有 main 上的 CI 完成才触发
+
+env:
+  DAG_ID: market_daily 
 
 on:
   workflow_dispatch:
@@ -97,7 +101,7 @@ jobs:
         AIRFLOW_HOST: ${{ secrets.AIRFLOW_HOST }}
         AIRFLOW_USER: ${{ secrets.AIRFLOW_USER }}
         AIRFLOW_PASS: ${{ secrets.AIRFLOW_PASS }}
-        DAG_ID      : market_history
+        # DAG_ID  从全局变量继承
       run: |
         set -euo pipefail
     
