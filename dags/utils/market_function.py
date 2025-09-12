@@ -124,6 +124,8 @@ def market_currency(df,serie):
     sort["ticker"]=holder
     #format index + drop + sort
     data=sort.reset_index().set_index(['Date','ticker']).sort_index(level='Date',ascending=True)
+    #转为ms 方便spark 使用
+    data.index = data.index.set_levels(data.index.levels[0].astype("datetime64[ms]"), level=0)
     return data
 
 
