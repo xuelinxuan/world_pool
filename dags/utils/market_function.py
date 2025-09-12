@@ -82,28 +82,33 @@ class S3_save_extract:
             "s3",
             aws_access_key_id=self._aws_access_key_id,
             aws_secret_access_key=self._aws_secret_access_key,
-            region_name=self._region_name
-        )
+            region_name=self._region_name)
 
     def save_hist(self, df, filename):
-        holder = io.BytesIO()
-        df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
-        holder.seek(0)
-        key = f"{self.niveau}/market/{filename}.parquet"
-        self.s3.upload_fileobj(holder, self._bucket, key)
-        print(f"✅ Upload ok! s3://{self._bucket}/{key}")
-        return df
+        buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
+        df.to_parquet(buffer, index=True)
+        self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue()) 
+        print(f"✅ Uploaded {filename} to s3://{self._bucket}/{self.niveau}/market/{filename}.parquet")
 
-    def save_daily(self, df, filename):
-        holder = io.BytesIO()
-        df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
-        holder.seek(0)
-        today = date.today().strftime("%Y-%m-%d")
-        date_filename = f"{today}_{filename}"
-        key = f"{self.niveau}/market/streaming/{date_filename}.parquet"
-        self.s3.upload_fileobj(holder, self._bucket, key)
-        print(f"✅ Upload ok! s3://{self._bucket}/{key}")
-        return df
+    # def save_hist(self, df, filename):
+    #     holder = io.BytesIO()
+    #     df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
+    #     holder.seek(0)
+    #     key = f"{self.niveau}/market/{filename}.parquet"
+    #     self.s3.upload_fileobj(holder, self._bucket, key)
+    #     print(f"✅ Upload ok! s3://{self._bucket}/{key}")
+    #     return df
+
+    # def save_daily(self, df, filename):
+    #     holder = io.BytesIO()
+    #     df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
+    #     holder.seek(0)
+    #     today = date.today().strftime("%Y-%m-%d")
+    #     date_filename = f"{today}_{filename}"
+    #     key = f"{self.niveau}/market/streaming/{date_filename}.parquet"
+    #     self.s3.upload_fileobj(holder, self._bucket, key)
+    #     print(f"✅ Upload ok! s3://{self._bucket}/{key}")
+    #     return df
 
     def extract(self, filename):
         obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"bronze/market/{filename}.parquet")
@@ -126,7 +131,8 @@ def market_currency(df,serie):
     data=sort.reset_index().set_index(['Date','ticker']).sort_index(level='Date',ascending=True)
     #转为ms 方便spark 使用
     data.index = data.index.set_levels(data.index.levels[0].astype("datetime64[ms]"), level=0)
-    return data
+    data_sp=spark.createDataFrame(data.reset_index())
+    return data_sp
 
 
 
