@@ -85,7 +85,7 @@ class S3_save_extract:
             region_name=self._region_name
         )
 
-    def save(self, df, filename):
+    def save_hist(self, df, filename):
         holder = io.BytesIO()
         df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
         holder.seek(0)
