@@ -1,8 +1,10 @@
 import requests, time, os, pytest, boto3, io, sys
-import yfinance    as yf
-import pandas      as pd
-from   datetime    import datetime, date, timedelta
-from   pyspark.sql import SparkSession, functions as F
+import yfinance      as yf
+import pandas        as pd
+from   delta.tables  import DeltaTable
+from   datetime      import datetime, date, timedelta
+from   pyspark.sql   import SparkSession, functions as F
+from   delta         import configure_spark_with_delta_pip
 
 class yahoo_pv:
 
@@ -11,7 +13,7 @@ class yahoo_pv:
         self.end             = self.ts_df_s_d(end)
         self.ticker          = ticker
         self.ticker_list     = ticker_list
-        self.spark           = SparkSession.builder.appName("myApp").getOrCreate() #避免调用下一个api 使用二次启动
+        # self.spark           = SparkSession.builder.appName("myApp").getOrCreate() #避免调用下一个api 使用二次启动
 
     #Fetche data of history
     @staticmethod
@@ -24,9 +26,9 @@ class yahoo_pv:
         #重命名
         data=data.rename(columns={'Close':'currency'})
         #为了统一时区，格式转换：1.变成str,2.去小时，3.变回datetime
-        idx_str = data.index.astype(str).str.slice(0, 10) 
+        idx_str = data.index.astype(str).str.slice(0, 10)
         data.index = pd.to_datetime(idx_str)
-        return  data      
+        return  data
 
     def cb_currency(self):
         holder = self.ticker
@@ -50,10 +52,10 @@ class yahoo_pv:
         data_origin=yf.Ticker(self.ticker).history(start=self.start, end=self.end)[['Open','High','Low','Close','Volume']].assign(ticker=self.ticker)
         #合并新数据
         data=data_origin.join(adj_close)
-        idx_str = data.index.astype(str).str.slice(0, 10) 
+        idx_str = data.index.astype(str).str.slice(0, 10)
         data.index = pd.to_datetime(idx_str)
         return  data
-        
+
 
     def cb_market(self):
         holder = self.ticker
@@ -68,7 +70,7 @@ class yahoo_pv:
         data['Nation']=data['ticker'].map(mapping)
         data=data.set_index('Nation',append=True)
         return data.reorder_levels(['Date','Nation']).sort_index()
-        
+
 class S3_save_extract:
     _aws_access_key_id     = "AKIAWDYU6IA6HRAXK7XW"
     _aws_secret_access_key = "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"
@@ -78,61 +80,80 @@ class S3_save_extract:
     def __init__(self, niveau, format):
         self.niveau   = niveau
         self.format   = format
-        self.s3 = boto3.client(
-            "s3",
-            aws_access_key_id=self._aws_access_key_id,
-            aws_secret_access_key=self._aws_secret_access_key,
-            region_name=self._region_name)
+        self.today    = date.today().strftime("%Y-%m-%d")
+        self.s3       = boto3.client( "s3",aws_access_key_id    =self._aws_access_key_id,
+                                     aws_secret_access_key      =self._aws_secret_access_key,
+                                     region_name                =self._region_name)
 
-    def save_hist(self, df, filename):
+        os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars /content/jars/hadoop-aws-3.3.4.jar,/content/jars/aws-java-sdk-bundle-1.12.262.jar pyspark-shell"
+
+        builder = (SparkSession.builder
+              # —— 你已有的 S3A & Delta 配置原样保留 ——
+              .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+              .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
+              .config("spark.hadoop.fs.s3a.access.key", self._aws_access_key_id)
+              .config("spark.hadoop.fs.s3a.secret.key", self._aws_secret_access_key)
+              #时间秒问题
+              .config("spark.hadoop.fs.s3a.connection.establish.timeout", "30000")
+              .config("spark.hadoop.fs.s3a.connection.timeout", "200000")
+              .config("spark.hadoop.fs.s3a.connection.maximum-lifetime", "86400000")
+              .config("spark.hadoop.fs.s3a.threads.keepalivetime", "60000")
+              .config("spark.hadoop.fs.s3a.multipart.purge.age", "86400000")
+
+              .config("spark.hadoop.fs.s3a.aws.credentials.provider","org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+              #dalta
+              .config("spark.sql.extensions","io.delta.sql.DeltaSparkSessionExtension")
+              .config("spark.sql.catalog.spark_catalog","org.apache.spark.sql.delta.catalog.DeltaCatalog")
+              .config("spark.delta.logStore.class","org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
+            )
+        self.spark = configure_spark_with_delta_pip(builder).getOrCreate()
+
+
+    def save(self, df, filename):
         buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
         df.to_parquet(buffer, index=True)
-        self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue()) 
-        print(f"✅ Uploaded {filename} to s3://{self._bucket}/{self.niveau}/market/{filename}.parquet")
-
-    # def save_hist(self, df, filename):
-    #     holder = io.BytesIO()
-    #     df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
-    #     holder.seek(0)
-    #     key = f"{self.niveau}/market/{filename}.parquet"
-    #     self.s3.upload_fileobj(holder, self._bucket, key)
-    #     print(f"✅ Upload ok! s3://{self._bucket}/{key}")
-    #     return df
-
-    # def save_daily(self, df, filename):
-    #     holder = io.BytesIO()
-    #     df.to_parquet(holder, engine="pyarrow", index=True, compression=self.format)
-    #     holder.seek(0)
-    #     today = date.today().strftime("%Y-%m-%d")
-    #     date_filename = f"{today}_{filename}"
-    #     key = f"{self.niveau}/market/streaming/{date_filename}.parquet"
-    #     self.s3.upload_fileobj(holder, self._bucket, key)
-    #     print(f"✅ Upload ok! s3://{self._bucket}/{key}")
-    #     return df
+        self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue())
+        return df
 
     def extract(self, filename):
         obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"bronze/market/{filename}.parquet")
         df = pd.read_parquet(io.BytesIO(obj['Body'].read()))
-        print(f"✅ Loaded {filename}, shape={df.shape}")
         return df
 
+    def market_currency(self, df,serie):
+        spark=  self.spark
+        #outer join
+        outer_join=df.join(serie, how="outer")  #按照双索引join：Date 和 Nation
+        #sort+fill
+        sort=outer_join.sort_index(level=["Nation", "Date"])
+        holder = sort["ticker"] #seire 避免机构有index
+        sort_col=["Open","High","Low","Close","Adj_close","Volume"]
+        #df/serie
+        sort[sort_col]=sort[sort_col].div(sort["currency"], axis=0)
+        sort["ticker"]=holder #放回来
+        #转为ms 方便spark 使用
+        sort.index = sort.index.set_levels(sort.index.levels[0], level=0) 
+        data    = sort.reset_index().sort_values("Date")
+        data_sp = spark.createDataFrame(data)
+        data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
+        return    data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms
 
-def market_currency(df,serie):
-    #outer join
-    outer_join=df.join(serie, how="outer")
-    #sort+fill
-    sort=outer_join.sort_index(level=["Nation", "Date"]).ffill()
-    holder = sort["ticker"] #seire 避免机构有index 
-    sort_col=["Open","High","Low","Close","Adj_close","Volume"]
-    #df/serie
-    sort[sort_col]=sort[sort_col].div(sort["currency"], axis=0)
-    sort["ticker"]=holder
-    #format index + drop + sort
-    data=sort.reset_index().set_index(['Date','ticker']).sort_index(level='Date',ascending=True)
-    #转为ms 方便spark 使用
-    data.index = data.index.set_levels(data.index.levels[0].astype("datetime64[ms]"), level=0)
-    data_sp=spark.createDataFrame(data.reset_index())
-    return data_sp
+    def save_market_daily_currency(self, sp, filename):
+        key = f"{self.niveau}/market/streaming/{self.today}_{filename}.parquet"
+        return sp.write.mode("overwrite").parquet(f"s3a://{self._bucket}/{key}")
 
+    def save_market_hist_currency(self, df, filename):
+        path = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
+        writer = (df.write.format("delta").mode("overwrite").option("compression", "snappy"))
+        return writer.partitionBy(*["dt"]).save(path)
 
-
+    def merge_daily_hist(self):
+        DAILY_PATH = f"s3a://world-pool-bucket-version-1/silver/market/streaming/{self.today}_market_daily_currency.parquet"
+        HIST_PATH  = "s3a://world-pool-bucket-version-1/silver/market/market_daily_currency/"
+        daily= self.spark.read.parquet(DAILY_PATH)
+        DeltaTable.forPath(self.spark, HIST_PATH).alias("L") \
+        .merge(daily.alias("D"), "L.Date = D.Date AND L.ticker = D.ticker") \
+        .whenMatchedUpdateAll() \
+        .whenNotMatchedInsertAll() \
+        .execute()
+        return None
