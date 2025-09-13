@@ -142,7 +142,7 @@ class S3_save_extract:
         data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
         return    data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms
 
-    def market_hist_currency_partition(self, df, filename):
+    def market_history_currency_partition(self, df, filename):
         path = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
         writer = (df.write.format("delta").mode("overwrite").option("compression", "snappy"))
         return writer.partitionBy(*["dt"]).save(path)
