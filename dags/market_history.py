@@ -56,4 +56,4 @@ with DAG(dag_id='market_history', schedule_interval=None, start_date=datetime(20
     end   = EmptyOperator(task_id="end")
 
     # Set task dependencie
-    start >> [cb_market_history_raw_task,cb_currency_history_raw_task]>>market_hist_currency_save_task>> market_hist_currency_partition_task >> end
+    start >> [cb_market_history_raw_task,cb_currency_hist_raw_task]>>market_hist_currency_save_task>> market_hist_currency_partition_task >> end
