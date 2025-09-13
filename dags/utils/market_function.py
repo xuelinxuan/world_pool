@@ -142,7 +142,7 @@ class S3_save_extract:
         key = f"{self.niveau}/market/streaming/{self.today}_{filename}.parquet"
         return sp.write.mode("overwrite").parquet(f"s3a://{self._bucket}/{key}")
 
-    def save_market_hist_currency(self, df, filename):
+    def market_hist_currency_partition(self, df, filename):
         path = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
         writer = (df.write.format("delta").mode("overwrite").option("compression", "snappy"))
         return writer.partitionBy(*["dt"]).save(path)
