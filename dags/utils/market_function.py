@@ -116,7 +116,7 @@ class S3_save_extract:
         return df
 
     def extract(self, filename):
-        obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"bronze/market/{filename}.parquet")
+        obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"{self.niveau}/market/{filename}.parquet")
         df = pd.read_parquet(io.BytesIO(obj['Body'].read()))
         return df
 
@@ -148,8 +148,8 @@ class S3_save_extract:
         return writer.partitionBy(*["dt"]).save(path)
 
     def merge_daily_hist(self):
-        DAILY_PATH = f"s3a://world-pool-bucket-version-1/silver/market/streaming/{self.today}_market_daily_currency.parquet"
-        HIST_PATH  = "s3a://world-pool-bucket-version-1/silver/market/market_daily_currency/"
+        DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_market_daily_currency.parquet"
+        HIST_PATH  = "s3a://world-pool-bucket-version-1/{self.niveau}/market/market_daily_currency/"
         daily= self.spark.read.parquet(DAILY_PATH)
         DeltaTable.forPath(self.spark, HIST_PATH).alias("L") \
         .merge(daily.alias("D"), "L.Date = D.Date AND L.ticker = D.ticker") \
