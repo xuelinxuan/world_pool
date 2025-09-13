@@ -42,7 +42,7 @@ def market_hist_currency_save():
     return df.shape[0]
     
 @task
-def market_hist_currency_partition(self, df, filename):
+def market_hist_currency_partition():
     market_hist_currency                =S3_silver.extract('market_hist_currency')
     market_hist_currency_partition      =S3_silver.market_history_currency_partition(market_hist_currency,"market_hist_currency_partition")                                                                    
     return df.shape[0]
