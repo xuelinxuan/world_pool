@@ -1,8 +1,9 @@
 version: '3'
 x-airflow-common:
   &airflow-common
+  #使用 requirement 和dockerfile 的地址
   build:
-    context: ./containers/airflow/
+    context: ./containers/airflow/   
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
