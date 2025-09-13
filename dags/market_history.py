@@ -35,16 +35,16 @@ def cb_currency_hist_raw():
   
 @task
 def market_hist_currency_save():
-    extract_cb_market_history_raw    =S3.extract('cb_market_history_raw')
-    extract_cb_currency_history_raw  =S3.extract('cb_currency_history_raw')
-    market_hist_currency            =S3_silver.market_currency(extract_cb_market_history_raw,extract_cb_currency_history_raw)
-    save_market_hist_currency       =S3_silver.save_hist(market_hist_currency, "market_hist_currency")  # 存完成的parquet 文件
+    extract_cb_market_history_raw       =S3.extract('cb_market_history_raw')
+    extract_cb_currency_history_raw     =S3.extract('cb_currency_history_raw')
+    market_hist_currency                =S3_silver.market_currency(extract_cb_market_history_raw,extract_cb_currency_history_raw)
+    save_market_hist_currency           =S3_silver.save_hist(market_hist_currency, "market_hist_currency")  # 存完成的parquet 文件
     return df.shape[0]
     
 @task
 def market_hist_currency_partition(self, df, filename):
-    market_hist_currency            =S3_silver.extract('market_hist_currency')
-    market_hist_currency_partition  =S3_silver.market_history_currency_partition(market_hist_currency,"market_hist_currency_partition")                                                                    
+    market_hist_currency                =S3_silver.extract('market_hist_currency')
+    market_hist_currency_partition      =S3_silver.market_history_currency_partition(market_hist_currency,"market_hist_currency_partition")                                                                    
     return df.shape[0]
                                                                                
 with DAG(dag_id='market_history', schedule_interval=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
