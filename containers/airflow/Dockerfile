@@ -30,8 +30,8 @@ ENV PYTHONPATH="/opt/airflow/dags:/opt/airflow/plugins:${PYTHONPATH}"
 # ---- Python 依赖 ----
 USER airflow
 
-# 临时调试标记，只为在 build 日志里确认
-RUN echo "<<< USING THIS DOCKERFILE >>>"
+# # 临时调试标记，只为在 build 日志里确认
+# RUN echo "USING THIS DOCKERFILE"
 
 # 复制 requirements 并安装
 COPY requirements.txt /requirements.txt
