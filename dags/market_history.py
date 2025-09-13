@@ -19,7 +19,6 @@ save_silver_parquet=S3_save_extract("silver",format=None)
 S3=S3_save_extract("bronze", None)
 S3_silver=S3_save_extract("silver",format=None)
 
-###################################################################### Bronze ######################################################################
 @task
 def cb_market_hist_raw():
     paras = yahoo_pv(start='2020-01-01', end='2022-01-01',ticker='510050.SS', ticker_list=['SPY', '510050.SS'])
@@ -50,13 +49,10 @@ def market_hist_currency_partition(self, df, filename)
                                                                                
 with DAG(dag_id='market_history', schedule_interval=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
     start = EmptyOperator(task_id="yahoo_market")
-
     cb_market_hist_raw_task             = cb_market_hist_raw()
     cb_currency_hist_raw_task           = cb_currency_hist_raw()
     market_hist_currency_save_task      = market_hist_currency_save()
     market_hist_currency_partition_task = market_hist_currency_partition()
-    
-
     end   = EmptyOperator(task_id="end")
 
     # Set task dependencie
