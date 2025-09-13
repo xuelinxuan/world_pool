@@ -29,9 +29,14 @@ ENV PYTHONPATH="/opt/airflow/dags:/opt/airflow/plugins:${PYTHONPATH}"
 
 # ---- Python 依赖 ----
 USER airflow
-RUN echo "<<< USING THIS DOCKERFILE >>>"   # ← 临时调试标记，只为在 build 日志里确认
-COPY requirements.txt /requirements.txt     # ← 原本就应该有
-RUN python -m pip install --no-cache-dir -r /requirements.txt  # ← 原本就应该有
+
+# 临时调试标记，只为在 build 日志里确认
+RUN echo "<<< USING THIS DOCKERFILE >>>"
+
+# 复制 requirements 并安装
+COPY requirements.txt /requirements.txt
+RUN python -m pip install --no-cache-dir -r /requirements.txt
+
 
 
 
