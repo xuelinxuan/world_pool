@@ -44,7 +44,7 @@ def market_hist_currency_save():
 @task
 def market_hist_currency_partition(self, df, filename):
     market_daily_currency            =S3_silver.extract('market_hist_currency')
-    market_daily_currency_partition  =S3_silver.market_hist_currency_partition(market_daily_currency,"market_daily_currency_partition"                                                                       
+    market_daily_currency_partition  =S3_silver.market_hist_currency_partition(market_daily_currency,"market_daily_currency_partition")                                                                    
     return df.shape[0]
                                                                                
 with DAG(dag_id='market_history', schedule_interval=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
