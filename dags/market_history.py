@@ -38,7 +38,7 @@ def market_hist_currency_save():
     extract_cb_market_history_raw    =S3.extract('cb_market_history_raw')
     extract_cb_currency_history_raw  =S3.extract('cb_currency_history_raw')
     market_hist_currency            =S3_silver.market_currency(extract_cb_market_history_raw,extract_cb_currency_history_raw)
-    save_market_hist_currency       =S3_silver.save_hist(self, market_hist_currency, "market_hist_currency")  # 存完成的parquet 文件
+    save_market_hist_currency       =S3_silver.save_hist(market_hist_currency, "market_hist_currency")  # 存完成的parquet 文件
     return df.shape[0]
     
 @task
