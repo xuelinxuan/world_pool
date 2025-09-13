@@ -52,7 +52,7 @@ jobs:
         username: ${{ secrets.SSH_USER }}
         key     : ${{ secrets.SSH_KEY }}        # 部署专用私钥
         source  : dags/
-        target  : /home/ubuntu/world_pool/dags/
+        target  : /home/ubuntu/world_pool/
 
 
     - name: 4.Setup Airflow via SSM
