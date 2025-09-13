@@ -115,11 +115,9 @@ class S3_save_extract:
         self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue())
         return df
 
-    def save_daily(self, df, filename):
-        buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
-        df.to_parquet(buffer, index=True)
-        self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/streaming/{filename}.parquet", Body=buffer.getvalue())
-        return df
+    def save_daily(self, sp, filename):
+        key = f"{self.niveau}/market/streaming/{self.today}_{filename}.parquet"
+        return sp.write.mode("overwrite").parquet(f"s3a://{self._bucket}/{key}")
 
     def extract(self, filename):
         obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"{self.niveau}/market/{filename}.parquet")
@@ -143,10 +141,6 @@ class S3_save_extract:
         data_sp = spark.createDataFrame(data)
         data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
         return    data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms
-
-    def save_market_daily_currency(self, sp, filename):
-        key = f"{self.niveau}/market/streaming/{self.today}_{filename}.parquet"
-        return sp.write.mode("overwrite").parquet(f"s3a://{self._bucket}/{key}")
 
     def market_hist_currency_partition(self, df, filename):
         path = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
