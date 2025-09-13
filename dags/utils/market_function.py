@@ -109,10 +109,16 @@ class S3_save_extract:
         self.spark = configure_spark_with_delta_pip(builder).getOrCreate()
 
 
-    def save(self, df, filename):
+    def save_hist(self, df, filename):
         buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
         df.to_parquet(buffer, index=True)
         self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue())
+        return df
+
+    def save_daily(self, df, filename):
+        buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
+        df.to_parquet(buffer, index=True)
+        self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/streaming/{filename}.parquet", Body=buffer.getvalue())
         return df
 
     def extract(self, filename):
