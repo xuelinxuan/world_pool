@@ -4,6 +4,7 @@ from airflow import DAG
 from airflow.decorators import task
 from airflow.operators.empty import EmptyOperator
 from datetime import datetime
+import  os
 
 os.environ['NO_PROXY'] = '*'  #request 不用代理环境
 
