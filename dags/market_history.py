@@ -23,7 +23,7 @@ S3_silver=S3_save_extract("silver",format=None)
 def cb_market_hist_raw():
     paras = yahoo_pv(start='2021-11-01', end='2022-01-01',ticker='510050.SS', ticker_list=['SPY', '510050.SS'])
     df    = paras.cb_market()
-    
+    save_bronze_parquet=S3_save_extract("bronze",format=None)
     save_bronze_parquet.save_hist(df,'cb_market_history_raw')
     return df.shape[0]
   
@@ -32,6 +32,7 @@ def cb_currency_hist_raw():
     paras = yahoo_pv(start='2021-11-01', end='2022-01-01',ticker='CNY=X', ticker_list=['CNY=X', 'EURCHF=X'])
     df    = paras.cb_currency()
     print(df.head(3)) 
+    save_bronze_parquet=S3_save_extract("bronze",format=None)
     save_bronze_parquet.save_hist(df,'cb_currency_history_raw')
     return df.shape[0]
   
