@@ -1,3 +1,4 @@
+
 from   airflow                      import DAG
 from   airflow.operators.python     import PythonOperator
 from   airflow.operators.empty      import EmptyOperator
@@ -8,6 +9,7 @@ from   delta.tables                 import DeltaTable
 from   utils.market_function        import yahoo_pv, S3_save_extract
 from   delta                        import configure_spark_with_delta_pip
 
+import logging
 import pandas                       as pd
 import requests, time, os, io
 
@@ -32,6 +34,7 @@ def cb_currency_hist_raw():
     paras = yahoo_pv(start='2021-11-01', end='2022-01-01',ticker='CNY=X', ticker_list=['CNY=X', 'EURCHF=X'])
     df    = paras.cb_currency()
     print(df.head(3)) 
+    logging.info(df.head(3))
     save_bronze_parquet=S3_save_extract("bronze",format=None)
     save_bronze_parquet.save_hist(df,'cb_currency_history_raw')
     return df.shape[0]
