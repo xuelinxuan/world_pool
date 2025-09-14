@@ -24,16 +24,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
+# ---- Spark 依赖 JAR（Hadoop AWS + AWS SDK）----
+# 下载到 /opt/spark/jars，避免 /content/jars 这种不存在的目录
+RUN mkdir -p /opt/spark/jars && \
+    curl -L https://repo1.maven.org/maven2/org/apache/hadoop/hadoop-aws/3.3.4/hadoop-aws-3.3.4.jar \
+      -o /opt/spark/jars/hadoop-aws-3.3.4.jar && \
+    curl -L https://repo1.maven.org/maven2/com/amazonaws/aws-java-sdk-bundle/1.12.262/aws-java-sdk-bundle-1.12.262.jar \
+      -o /opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar
+
+# 让 Spark 知道这些 jars 的位置
+ENV SPARK_CLASSPATH="/opt/spark/jars/*:${SPARK_CLASSPATH}"
+
 # 让 dags 里的自定义包可被 import（可选）
 ENV PYTHONPATH="/opt/airflow/dags:/opt/airflow/plugins:${PYTHONPATH}"
 
 # ---- Python 依赖 ----
 USER airflow
-
-# # 临时调试标记，只为在 build 日志里确认
-# RUN echo "USING THIS DOCKERFILE"
-
-# 复制 requirements 并安装
 COPY requirements.txt /requirements.txt
 RUN python -m pip install --no-cache-dir -r /requirements.txt
 
