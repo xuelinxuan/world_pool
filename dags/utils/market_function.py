@@ -33,6 +33,8 @@ class yahoo_pv:
         #为了统一时区，格式转换：1.变成str,2.去小时，3.变回datetime
         idx_str = data.index.astype(str).str.slice(0, 10)
         data.index = pd.to_datetime(idx_str)
+        #避免限流
+        time.sleep(60)
         return  data
 
     def cb_currency(self):
@@ -59,6 +61,8 @@ class yahoo_pv:
         data=data_origin.join(adj_close)
         idx_str = data.index.astype(str).str.slice(0, 10)
         data.index = pd.to_datetime(idx_str)
+        #避免限流
+        time.sleep(60)
         return  data
 
 
