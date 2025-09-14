@@ -86,9 +86,11 @@ class S3_save_extract:
         self.niveau   = niveau
         self.format   = format
         self.today    = date.today().strftime("%Y-%m-%d")
+        self._spark    = None 
         self.s3       = boto3.client( "s3",aws_access_key_id    =self._aws_access_key_id,
                                      aws_secret_access_key      =self._aws_secret_access_key,
                                      region_name                =self._region_name)
+        
 
         # os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars /opt/spark/jars/hadoop-aws-3.3.4.jar,/opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar pyspark-shell"
 
@@ -138,10 +140,10 @@ class S3_save_extract:
             self._spark = configure_spark_with_delta_pip(builder).getOrCreate()
         return self._spark
 
-    def stop_spark(self):
-        if self._spark is not None:
-            self._spark.stop()
-            self._spark = None
+    # def stop_spark(self):
+    #     if self._spark is not None:
+    #         self._spark.stop()
+    #         self._spark = None
             
     def save_hist(self, df, filename):
         buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
