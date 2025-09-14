@@ -8,8 +8,6 @@ from   delta               import configure_spark_with_delta_pip
 from   requests.adapters   import HTTPAdapter
 from   urllib3.util.retry  import Retry
 
-
-
 class yahoo_pv:
 
     def __init__(self, start, end, ticker, ticker_list):
@@ -18,7 +16,6 @@ class yahoo_pv:
         self.ticker          = ticker
         self.ticker_list     = ticker_list
         self._spark          = None
-        # self.spark           = SparkSession.builder.appName("myApp").getOrCreate() #避免调用下一个api 使用二次启动
 
     #Fetche data of history
     @staticmethod
@@ -33,8 +30,6 @@ class yahoo_pv:
         #为了统一时区，格式转换：1.变成str,2.去小时，3.变回datetime
         idx_str = data.index.astype(str).str.slice(0, 10)
         data.index = pd.to_datetime(idx_str)
-        #避免限流
-        time.sleep(60)
         return  data
 
     def cb_currency(self):
