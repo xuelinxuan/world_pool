@@ -161,7 +161,7 @@ class S3_save_extract:
     # ---------- 不用 Spark 的方法保持不变 ----------
 
     def market_currency(self, df,serie):
-        spark = getattr(self, "_spark", None)
+        spark = self._get_spark()
         #outer join
         outer_join=df.join(serie, how="outer")  #按照双索引join：Date 和 Nation
         #sort+fill
