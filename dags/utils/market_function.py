@@ -89,30 +89,59 @@ class S3_save_extract:
                                      aws_secret_access_key      =self._aws_secret_access_key,
                                      region_name                =self._region_name)
 
-        os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars /opt/spark/jars/hadoop-aws-3.3.4.jar,/opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar pyspark-shell"
+        # os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars /opt/spark/jars/hadoop-aws-3.3.4.jar,/opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar pyspark-shell"
 
-        builder = (SparkSession.builder
-              # —— 你已有的 S3A & Delta 配置原样保留 ——
-              .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-              .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
-              .config("spark.hadoop.fs.s3a.access.key", self._aws_access_key_id)
-              .config("spark.hadoop.fs.s3a.secret.key", self._aws_secret_access_key)
-              #时间秒问题
-              .config("spark.hadoop.fs.s3a.connection.establish.timeout", "30000")
-              .config("spark.hadoop.fs.s3a.connection.timeout", "200000")
-              .config("spark.hadoop.fs.s3a.connection.maximum-lifetime", "86400000")
-              .config("spark.hadoop.fs.s3a.threads.keepalivetime", "60000")
-              .config("spark.hadoop.fs.s3a.multipart.purge.age", "86400000")
+        # builder = (SparkSession.builder
+        #       # —— 你已有的 S3A & Delta 配置原样保留 ——
+        #       .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+        #       .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
+        #       .config("spark.hadoop.fs.s3a.access.key", self._aws_access_key_id)
+        #       .config("spark.hadoop.fs.s3a.secret.key", self._aws_secret_access_key)
+        #       #时间秒问题
+        #       .config("spark.hadoop.fs.s3a.connection.establish.timeout", "30000")
+        #       .config("spark.hadoop.fs.s3a.connection.timeout", "200000")
+        #       .config("spark.hadoop.fs.s3a.connection.maximum-lifetime", "86400000")
+        #       .config("spark.hadoop.fs.s3a.threads.keepalivetime", "60000")
+        #       .config("spark.hadoop.fs.s3a.multipart.purge.age", "86400000")
 
-              .config("spark.hadoop.fs.s3a.aws.credentials.provider","org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-              #dalta
-              .config("spark.sql.extensions","io.delta.sql.DeltaSparkSessionExtension")
-              .config("spark.sql.catalog.spark_catalog","org.apache.spark.sql.delta.catalog.DeltaCatalog")
-              .config("spark.delta.logStore.class","org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
+        #       .config("spark.hadoop.fs.s3a.aws.credentials.provider","org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+        #       #dalta
+        #       .config("spark.sql.extensions","io.delta.sql.DeltaSparkSessionExtension")
+        #       .config("spark.sql.catalog.spark_catalog","org.apache.spark.sql.delta.catalog.DeltaCatalog")
+        #       .config("spark.delta.logStore.class","org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
+        #     )
+        # self.spark = configure_spark_with_delta_pip(builder).getOrCreate()
+    
+    def _get_spark(self):
+        if self._spark is None:
+            # 现在 jars 已在 /opt/spark/jars 下，无需再设 PYSPARK_SUBMIT_ARGS
+            builder = (
+                SparkSession.builder
+                .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+                .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
+                .config("spark.hadoop.fs.s3a.access.key", self._aws_access_key_id)
+                .config("spark.hadoop.fs.s3a.secret.key", self._aws_secret_access_key)
+                .config("spark.hadoop.fs.s3a.aws.credentials.provider",
+                        "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
+                # 超时等
+                .config("spark.hadoop.fs.s3a.connection.establish.timeout", "30000")
+                .config("spark.hadoop.fs.s3a.connection.timeout", "200000")
+                .config("spark.hadoop.fs.s3a.connection.maximum-lifetime", "86400000")
+                .config("spark.hadoop.fs.s3a.threads.keepalivetime", "60000")
+                .config("spark.hadoop.fs.s3a.multipart.purge.age", "86400000")
+                # Delta
+                .config("spark.sql.extensions", "io.delta.sql.DeltaSparkSessionExtension")
+                .config("spark.sql.catalog.spark_catalog", "org.apache.spark.sql.delta.catalog.DeltaCatalog")
+                .config("spark.delta.logStore.class", "org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
             )
-        self.spark = configure_spark_with_delta_pip(builder).getOrCreate()
+            self._spark = configure_spark_with_delta_pip(builder).getOrCreate()
+        return self._spark
 
-
+    def stop_spark(self):
+        if self._spark is not None:
+            self._spark.stop()
+            self._spark = None
+            
     def save_hist(self, df, filename):
         buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
         df.to_parquet(buffer, index=True)
@@ -128,8 +157,10 @@ class S3_save_extract:
         df = pd.read_parquet(io.BytesIO(obj['Body'].read()))
         return df
 
+    # ---------- 不用 Spark 的方法保持不变 ----------
+
     def market_currency(self, df,serie):
-        spark=  self.spark
+        spark = self._get_spark()
         #outer join
         outer_join=df.join(serie, how="outer")  #按照双索引join：Date 和 Nation
         #sort+fill
@@ -144,8 +175,7 @@ class S3_save_extract:
         data    = sort.reset_index().sort_values("Date")
         data_sp = spark.createDataFrame(data)
         data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
-        return    data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms
-
+        return  data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms 
     def market_history_currency_partition(self, df, filename):
         path = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
         writer = (df.write.format("delta").mode("overwrite").option("compression", "snappy"))
