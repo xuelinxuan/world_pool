@@ -17,6 +17,7 @@ class yahoo_pv:
         self.end             = self.ts_df_s_d(end)
         self.ticker          = ticker
         self.ticker_list     = ticker_list
+        self._spark          = None
         # self.spark           = SparkSession.builder.appName("myApp").getOrCreate() #避免调用下一个api 使用二次启动
 
     #Fetche data of history
@@ -160,7 +161,7 @@ class S3_save_extract:
     # ---------- 不用 Spark 的方法保持不变 ----------
 
     def market_currency(self, df,serie):
-        spark = self._get_spark()
+        spark = getattr(self, "_spark", None)
         #outer join
         outer_join=df.join(serie, how="outer")  #按照双索引join：Date 和 Nation
         #sort+fill
@@ -176,6 +177,7 @@ class S3_save_extract:
         data_sp = spark.createDataFrame(data)
         data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
         return  data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms 
+        
     def market_history_currency_partition(self, df, filename):
         path = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
         writer = (df.write.format("delta").mode("overwrite").option("compression", "snappy"))
