@@ -5,6 +5,8 @@ from airflow.decorators import task
 from airflow.operators.empty import EmptyOperator
 from datetime import datetime
 
+os.environ['NO_PROXY'] = '*'  #request 不用代理环境
+
 @task
 def fetch_spy_hist():
     df = yfa.Ticker('SPY').history(start='2021-02-12', end='2021-03-02')
