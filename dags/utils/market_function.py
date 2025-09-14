@@ -3,10 +3,10 @@ import yfinance            as yf
 import pandas              as pd
 from   delta.tables        import DeltaTable
 from   datetime            import datetime, date, timedelta
-# from   pyspark.sql         import SparkSession, functions as F
-# from   delta               import configure_spark_with_delta_pip
-# from   requests.adapters   import HTTPAdapter
-# from   urllib3.util.retry  import Retry
+from   pyspark.sql         import SparkSession, functions as F
+from   delta               import configure_spark_with_delta_pip
+from   requests.adapters   import HTTPAdapter
+from   urllib3.util.retry  import Retry
 
 
 
