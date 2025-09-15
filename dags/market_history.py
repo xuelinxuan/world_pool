@@ -8,9 +8,8 @@ from   pyspark.sql                  import SparkSession, functions as F
 from   delta.tables                 import DeltaTable
 from   utils.market_function        import yahoo_pv, S3_save_extract
 from   delta                        import configure_spark_with_delta_pip
-
-import logging
 import pandas                       as pd
+import logging
 import requests, time, os, io
 
 os.environ['NO_PROXY'] = '*'  #request 不用代理环境
