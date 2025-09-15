@@ -162,7 +162,6 @@ class S3_save_extract:
     # ---------- 不用 Spark 的方法保持不变 ----------
 
     def market_currency(self, df,serie):
-        spark = self._get_spark()
         #outer join
         outer_join=df.join(serie, how="outer")  #按照双索引join：Date 和 Nation
         #sort+fill
@@ -181,6 +180,7 @@ class S3_save_extract:
         return data
         
     def market_history_currency_partition(self, df, filename):
+        spark = self._get_spark()
         data_sp = spark.createDataFrame(df)
         data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
         data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms 
