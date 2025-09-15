@@ -46,7 +46,7 @@ def market_hist_currency_save():
 def market_hist_currency_partition():
     market_hist_currency                =S3_silver.extract('market_hist_currency')
     market_hist_currency_partition      =S3_silver.market_history_currency_partition(market_hist_currency,"market_hist_currency_partition")                                                                    
-    return market_hist_currency_partition.shape[0]
+    return market_hist_currency_partition
                                                                                
 with DAG(dag_id='market_history', schedule_interval=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
     start = EmptyOperator(task_id="yahoo_market")
