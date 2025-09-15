@@ -35,6 +35,9 @@ RUN mkdir -p /opt/spark/jars && \
 # 让 Spark 知道这些 jars 的位置
 ENV SPARK_CLASSPATH="/opt/spark/jars/*:${SPARK_CLASSPATH}"
 
+# ✅ 新增：让 pyspark 自动加载 hadoop-aws & aws-java-sdk-bundle
+ENV PYSPARK_SUBMIT_ARGS="--jars /opt/spark/jars/hadoop-aws-3.3.4.jar,/opt/spark/jars/aws-java-sdk-
+
 # 让 dags 里的自定义包可被 import（可选）
 ENV PYTHONPATH="/opt/airflow/dags:/opt/airflow/plugins:${PYTHONPATH}"
 
