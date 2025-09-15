@@ -113,12 +113,7 @@ class S3_save_extract:
             )
             self._spark = configure_spark_with_delta_pip(builder).getOrCreate()
         return self._spark
-
-    # def stop_spark(self):
-    #     if self._spark is not None:
-    #         self._spark.stop()
-    #         self._spark = None
-            
+        
     def save_hist(self, df, filename):
         buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
         df.to_parquet(buffer, index=True)
@@ -135,9 +130,7 @@ class S3_save_extract:
         obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"{self.niveau}/market/{filename}.parquet")
         df = pd.read_parquet(io.BytesIO(obj['Body'].read()))
         return df
-
     # ---------- 不用 Spark 的方法保持不变 ----------
-
     def market_currency(self, df,serie):
         #outer join
         outer_join=df.join(serie, how="outer")  #按照双索引join：Date 和 Nation
@@ -178,12 +171,12 @@ class S3_save_extract:
     #     .execute()
     #     return None
 
-    def merge_daily_hist(self):
+    def merge_daily_hist(self, filename):
         spark      = self._get_spark()
-        DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_market_daily_currency.parquet"
+        DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_{filename}.parquet"
         HIST_PATH  = "s3a://world-pool-bucket-version-1/{self.niveau}/market/market_daily_currency/"
         daily      = spark.read.parquet(DAILY_PATH)
-        DeltaTable.forPath(self.spark, HIST_PATH).alias("L") \
+        DeltaTable.forPath(spark, HIST_PATH).alias("L") \
         .merge(daily.alias("D"), "L.Date = D.Date AND L.ticker = D.ticker") \
         .whenMatchedUpdateAll() \
         .whenNotMatchedInsertAll() \
