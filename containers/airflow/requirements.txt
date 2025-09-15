@@ -1,14 +1,14 @@
 pandas
 requests
-pyspark==3.5.1
+pyspark    ==3.5.1
 delta-spark==3.2.0
-boto3==1.34.131
-botocore==1.34.131
-yfinance==0.2.40
-duckdb==1.0.0
-polars==0.20.31
-plotly==5.22.0
-cuallee==0.10.3
+boto3      ==1.34.131
+botocore   ==1.34.131
+yfinance   ==0.2.65
+duckdb     ==1.0.0
+polars     ==0.20.31
+plotly     ==5.22.0
+cuallee    ==0.10.3
 types-requests==2.32.0.20240712
 
 apache-airflow-client==2.9.0
