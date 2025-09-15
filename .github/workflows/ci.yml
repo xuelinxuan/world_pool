@@ -4,12 +4,12 @@ permissions:
   id-token: write #常见于部署到云，比如 AWS
   contents: read
 on:
-  push:
-    paths:
-      - 'dags/**'
-  pull_request:
-    branches:
-      - main
+  # push:
+  #   paths:
+  #     - 'dags/**'
+  # pull_request:
+  #   branches:
+  #     - main
   workflow_dispatch:  #手动触发
 ############################################################ 1.python/sql/json ############################################################
 jobs:
