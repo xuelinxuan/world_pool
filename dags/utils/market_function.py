@@ -175,11 +175,15 @@ class S3_save_extract:
         #转为ms 方便spark 使用
         sort.index = sort.index.set_levels(sort.index.levels[0], level=0) 
         data    = sort.reset_index().sort_values("Date")
-        data_sp = spark.createDataFrame(data)
-        data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
-        return  data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms 
+        # data_sp = spark.createDataFrame(data)
+        # data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
+        # data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms 
+        return data
         
     def market_history_currency_partition(self, df, filename):
+        # data_sp = spark.createDataFrame(df)
+        # data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
+        # data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms 
         path = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
         writer = (df.write.format("delta").mode("overwrite").option("compression", "snappy"))
         return writer.partitionBy(*["dt"]).save(path)
