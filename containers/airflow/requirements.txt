@@ -9,7 +9,7 @@ duckdb     ==1.0.0
 polars     ==0.20.31
 plotly     ==5.22.0
 cuallee    ==0.10.3
-types-requests==2.32.0.20240712
+types-requests       ==2.32.0.20240712
 
 apache-airflow-client==2.9.0
 black==24.4.2
