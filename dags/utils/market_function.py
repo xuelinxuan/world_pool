@@ -166,10 +166,23 @@ class S3_save_extract:
         writer.partitionBy(*["dt"]).save(path)
         return data_sp.count()
 
+    # def merge_daily_hist(self):
+    #     spark   = self._get_spark()
+    #     DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_market_daily_currency.parquet"
+    #     HIST_PATH  = "s3a://world-pool-bucket-version-1/{self.niveau}/market/market_daily_currency/"
+    #     daily      = self.spark.read.parquet(DAILY_PATH)
+    #     DeltaTable.forPath(self.spark, HIST_PATH).alias("L") \
+    #     .merge(daily.alias("D"), "L.Date = D.Date AND L.ticker = D.ticker") \
+    #     .whenMatchedUpdateAll() \
+    #     .whenNotMatchedInsertAll() \
+    #     .execute()
+    #     return None
+
     def merge_daily_hist(self):
+        spark      = self._get_spark()
         DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_market_daily_currency.parquet"
         HIST_PATH  = "s3a://world-pool-bucket-version-1/{self.niveau}/market/market_daily_currency/"
-        daily      = self.spark.read.parquet(DAILY_PATH)
+        daily      = spark.read.parquet(DAILY_PATH)
         DeltaTable.forPath(self.spark, HIST_PATH).alias("L") \
         .merge(daily.alias("D"), "L.Date = D.Date AND L.ticker = D.ticker") \
         .whenMatchedUpdateAll() \
