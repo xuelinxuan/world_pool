@@ -57,4 +57,4 @@ with DAG(dag_id='market_daily',   schedule=None, start_date=datetime(2023, 1, 1)
     market_daily_upsert_hist_currency_task  = market_daily_upsert_hist_currency()
     end   = EmptyOperator(task_id="end")
 
-    start >> [cb_market_daily_raw_task ,cb_currency_daily_raw_task ] >>market_daily_currency_task >> market_daily_upsert_hist_currency >> end
+    start >> [cb_market_daily_raw_task, cb_currency_daily_raw_task] >> market_daily_currency_task >> market_daily_upsert_hist_currency_task >> end
