@@ -128,7 +128,7 @@ class S3_save_extract:
     def save_daily(self, df, filename):
         buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
         df.to_parquet(buffer, index=True)
-         self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue())
+        self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue())
         return df
 
     def extract(self, filename):
