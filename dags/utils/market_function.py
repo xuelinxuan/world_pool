@@ -186,7 +186,8 @@ class S3_save_extract:
         data_sp = data_sp.withColumn("dt", F.col("Date"))  
         path    = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
         writer  = (data_sp.write.format("delta").mode("overwrite").option("compression", "snappy"))
-        return writer.partitionBy(*["dt"]).save(path)
+        writer.partitionBy(*["dt"]).save(path)
+        return data_sp.count()
 
     def merge_daily_hist(self):
         DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_market_daily_currency.parquet"
