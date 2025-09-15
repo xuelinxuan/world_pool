@@ -13,7 +13,7 @@ permissions:
 #     branches: [main]       # 只有 main 上的 CI 完成才触发
 
 env:
-  DAG_ID: market_history
+  DAG_ID: market_daily
 
 on:
   workflow_dispatch:
