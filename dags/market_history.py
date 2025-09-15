@@ -33,19 +33,14 @@ def cb_market_hist_raw():
 def cb_currency_hist_raw():
     paras = yahoo_pv(start='2021-11-01', end='2022-01-01',ticker='CNY=X', ticker_list=['CNY=X', 'EURCHF=X'])
     df    = paras.cb_currency()
-    print(df.head(3)) 
-    logging.info(df.head(3))
     save_bronze_parquet=S3_save_extract("bronze",format=None)
     save_bronze_parquet.save_hist(df,'cb_currency_history_raw')
     return df.shape[0]
   
 @task
 def market_hist_currency_save():
-    S3                                  =S3_save_extract("bronze", None)
     extract_cb_market_history_raw       =S3.extract('cb_market_history_raw')
     extract_cb_currency_history_raw     =S3.extract('cb_currency_history_raw')
-    
-    S3_silver                           =S3_save_extract("silver",format=None)
     market_hist_currency                =S3_silver.market_currency(extract_cb_market_history_raw,extract_cb_currency_history_raw)
     save_market_hist_currency           =S3_silver.save_hist(market_hist_currency, "market_hist_currency")  # 存完成的parquet 文件
     return save_market_hist_currency.shape[0]
