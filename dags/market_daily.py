@@ -37,7 +37,7 @@ def cb_currency_daily_raw():
     return df.shape[0]
     
 @task 
-def market_daily_currency_callable():  
+def market_daily_currency():  
     S3=S3_save_extract("bronze", None)
     extract_cb_market_daily_raw      =S3.extract('cb_market_daily_raw')
     extract_cb_currency_daily_raw    =S3.extract('cb_currency_daily_raw')
@@ -69,7 +69,7 @@ with DAG(dag_id='market_daily',   schedule=None, start_date=datetime(2023, 1, 1)
     start = EmptyOperator(task_id="yahoo_market")
     cb_market_daily_raw_task              = cb_market_daily_raw()
     cb_currency_daily_raw_task            = cb_currency_daily_raw()
-    market_daily_currency_task            = market_daily_currency_callable()
+    market_daily_currency_task            = market_daily_currency()
     market_daily_upsert_history_currency  = market_daily_upsert_history_currency()
     end   = EmptyOperator(task_id="end")
 
