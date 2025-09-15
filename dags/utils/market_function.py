@@ -88,32 +88,7 @@ class S3_save_extract:
         self._spark    = None 
         self.s3       = boto3.client( "s3",aws_access_key_id    =self._aws_access_key_id,
                                      aws_secret_access_key      =self._aws_secret_access_key,
-                                     region_name                =self._region_name)
-        
-
-        # os.environ["PYSPARK_SUBMIT_ARGS"] = "--jars /opt/spark/jars/hadoop-aws-3.3.4.jar,/opt/spark/jars/aws-java-sdk-bundle-1.12.262.jar pyspark-shell"
-
-        # builder = (SparkSession.builder
-        #       # —— 你已有的 S3A & Delta 配置原样保留 ——
-        #       .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-        #       .config("spark.hadoop.fs.s3a.endpoint", "s3.amazonaws.com")
-        #       .config("spark.hadoop.fs.s3a.access.key", self._aws_access_key_id)
-        #       .config("spark.hadoop.fs.s3a.secret.key", self._aws_secret_access_key)
-        #       #时间秒问题
-        #       .config("spark.hadoop.fs.s3a.connection.establish.timeout", "30000")
-        #       .config("spark.hadoop.fs.s3a.connection.timeout", "200000")
-        #       .config("spark.hadoop.fs.s3a.connection.maximum-lifetime", "86400000")
-        #       .config("spark.hadoop.fs.s3a.threads.keepalivetime", "60000")
-        #       .config("spark.hadoop.fs.s3a.multipart.purge.age", "86400000")
-
-        #       .config("spark.hadoop.fs.s3a.aws.credentials.provider","org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider")
-        #       #dalta
-        #       .config("spark.sql.extensions","io.delta.sql.DeltaSparkSessionExtension")
-        #       .config("spark.sql.catalog.spark_catalog","org.apache.spark.sql.delta.catalog.DeltaCatalog")
-        #       .config("spark.delta.logStore.class","org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
-        #     )
-        # self.spark = configure_spark_with_delta_pip(builder).getOrCreate()
-    
+                                     region_name                =self._region_name)  
     def _get_spark(self):
         if self._spark is None:
             # 现在 jars 已在 /opt/spark/jars 下，无需再设 PYSPARK_SUBMIT_ARGS
@@ -150,9 +125,11 @@ class S3_save_extract:
         self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue())
         return df
 
-    def save_daily(self, sp, filename):
-        key = f"{self.niveau}/market/streaming/{self.today}_{filename}.parquet"
-        return sp.write.mode("overwrite").parquet(f"s3a://{self._bucket}/{key}")
+    def save_daily(self, df, filename):
+        buffer = io.BytesIO()  #Body=buffer.getvalue() 其实就是把你写到 内存缓冲区（BytesIO）
+        df.to_parquet(buffer, index=True)
+         self.s3.put_object(Bucket=self._bucket, Key=f"{self.niveau}/market/{filename}.parquet", Body=buffer.getvalue())
+        return df
 
     def extract(self, filename):
         obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"{self.niveau}/market/{filename}.parquet")
