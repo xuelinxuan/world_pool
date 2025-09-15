@@ -41,7 +41,7 @@ def market_daily_currency():
     S3=S3_save_extract("bronze", None)
     extract_cb_market_daily_raw      =S3.extract('cb_market_daily_raw')
     extract_cb_currency_daily_raw    =S3.extract('cb_currency_daily_raw')
-    df                               =market_currency(extract_cb_market_daily_raw, extract_cb_currency_daily_raw)
+    df                               =S3.market_currency(extract_cb_market_daily_raw, extract_cb_currency_daily_raw)
     save_silver_parquet.save_daily(df,'market_daily_currency')
     return df.shape[0]
 
