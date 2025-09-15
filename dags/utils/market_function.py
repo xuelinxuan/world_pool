@@ -174,11 +174,12 @@ class S3_save_extract:
     def merge_daily_hist(self, filename):
         spark      = self._get_spark()
         DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_{filename}.parquet"
-        HIST_PATH  = "s3a://world-pool-bucket-version-1/{self.niveau}/market/market_daily_currency/"
+        HIST_PATH  = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/{filename}"
         daily      = spark.read.parquet(DAILY_PATH)
+        rows       = daily.count()
         DeltaTable.forPath(spark, HIST_PATH).alias("L") \
         .merge(daily.alias("D"), "L.Date = D.Date AND L.ticker = D.ticker") \
         .whenMatchedUpdateAll() \
         .whenNotMatchedInsertAll() \
         .execute()
-        return None
+        return rows
