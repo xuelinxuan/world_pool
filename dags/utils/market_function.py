@@ -180,18 +180,18 @@ class S3_save_extract:
         return data
         
     def market_history_currency_partition(self, df, filename):
-        spark = self._get_spark()
+        spark   = self._get_spark()
         data_sp = spark.createDataFrame(df)
         data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
-        data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms 
-        path = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
-        writer = (data_sp.write.format("delta").mode("overwrite").option("compression", "snappy"))
+        data_sp = data_sp.withColumn("dt", F.col("Date"))  
+        path    = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
+        writer  = (data_sp.write.format("delta").mode("overwrite").option("compression", "snappy"))
         return writer.partitionBy(*["dt"]).save(path)
 
     def merge_daily_hist(self):
         DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_market_daily_currency.parquet"
         HIST_PATH  = "s3a://world-pool-bucket-version-1/{self.niveau}/market/market_daily_currency/"
-        daily= self.spark.read.parquet(DAILY_PATH)
+        daily      = self.spark.read.parquet(DAILY_PATH)
         DeltaTable.forPath(self.spark, HIST_PATH).alias("L") \
         .merge(daily.alias("D"), "L.Date = D.Date AND L.ticker = D.ticker") \
         .whenMatchedUpdateAll() \
