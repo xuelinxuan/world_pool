@@ -142,17 +142,16 @@ class S3_save_extract:
         sort[sort_col]=sort[sort_col].div(sort["currency"], axis=0)
         sort["ticker"]=holder #放回来
         #转为ms 方便spark 使用
-        sort.index = sort.index.set_levels(sort.index.levels[0], level=0) 
-        data    = sort.reset_index().sort_values("Date")
-        # data_sp = spark.createDataFrame(data)
-        # data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
-        # data_sp.withColumn("dt",   F.col("Date"))     #字符串类型，必秒java 要求ms 
+        sort.index    =sort.index.set_levels(sort.index.levels[0], level=0) 
+        data          = sort.reset_index().sort_values("Date")
         return data
         
     def market_history_currency_partition(self, df, filename):
         spark   = self._get_spark()
         data_sp = spark.createDataFrame(df)
-        data_sp = data_sp.withColumn("Date", F.to_date("Date")) #日期里类型
+         #日期里类型
+        data_sp = data_sp.withColumn("Date", F.to_date("Date")) 
+        #字符串类型，必秒java 要求ms 
         data_sp = data_sp.withColumn("dt", F.col("Date"))  
         path    = f"s3a://{self._bucket}/{self.niveau}/market/{filename}"
         writer  = (data_sp.write.format("delta").mode("overwrite").option("compression", "snappy"))
