@@ -51,7 +51,7 @@ def market_daily_currency():
 @task
 def market_daily_upsert_hist_currency():
     df                               =silver.merge_daily_hist('market_daily_currency')
-    return df.shape[0]
+    return row_count
     
 with DAG(dag_id='market_daily',   schedule=None, start_date=datetime(2023, 1, 1),  catchup=False) as dag:
     start = EmptyOperator(task_id="start")
