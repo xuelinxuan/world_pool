@@ -41,6 +41,7 @@ def market_daily_currency():
     extract_cb_market_daily_raw      =bronze.extract('cb_market_daily_raw')
     extract_cb_currency_daily_raw    =bronze.extract('cb_currency_daily_raw')
     df                               =bronze.market_currency(extract_cb_market_daily_raw, extract_cb_currency_daily_raw)
+    logging.info(f"Data：{df.head(3)}")
     silver.save_daily(df,'market_daily_currency')
     return df.shape[0]
 
