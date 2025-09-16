@@ -171,7 +171,7 @@ class S3_save_extract:
     #     return None
 
     def merge_daily_hist(self, filename):
-        obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"{self.niveau}/market//streaming/{self.today}_{filename}.parquet")
+        obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"{self.niveau}/market/streaming/{self.today}_{filename}.parquet")
         df = pd.read_parquet(io.BytesIO(obj['Body'].read()))
         spark   = self._get_spark()
         data_sp = spark.createDataFrame(df)
