@@ -8,6 +8,7 @@ from   pyspark.sql.types            import StringType
 from   delta.tables                 import DeltaTable
 from   utils.market_function        import yahoo_pv, S3_save_extract
 import pandas                       as pd
+import logging
 import requests, time, os, io
 
 
