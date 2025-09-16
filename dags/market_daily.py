@@ -27,6 +27,7 @@ silver=S3_save_extract("silver",format=None)
 def cb_market_daily_raw():
     paras = yahoo_pv(start=yesterday, end=today,ticker='SPY', ticker_list=['SPY', '510050.SS'])
     df = paras.cb_market()
+    logging.info(f"cb_market_daily_raw：{df.head(3)}")
     bronze.save_daily(df,'cb_market_daily_raw')
     return df.shape[0]
     
@@ -34,6 +35,7 @@ def cb_market_daily_raw():
 def cb_currency_daily_raw():
     paras = yahoo_pv(start=yesterday, end=today,ticker='CNY=X', ticker_list=['CNY=X', 'EURCHF=X'])
     df = paras.cb_currency()
+    logging.info(f"cb_currency_daily_raw：{df.head(3)}")
     bronze.save_daily( df,'cb_currency_daily_raw')
     return df.shape[0]
     
@@ -42,7 +44,7 @@ def market_daily_currency():
     extract_cb_market_daily_raw      =bronze.extract('cb_market_daily_raw')
     extract_cb_currency_daily_raw    =bronze.extract('cb_currency_daily_raw')
     df                               =bronze.market_currency(extract_cb_market_daily_raw, extract_cb_currency_daily_raw)
-    logging.info(f"Data：{df.head(3)}")
+    logging.info(f"market_daily_currency：{df.head(3)}")
     silver.save_daily(df,'market_daily_currency')
     return df.shape[0]
 
