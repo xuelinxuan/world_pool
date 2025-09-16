@@ -171,10 +171,15 @@ class S3_save_extract:
     #     return None
 
     def merge_daily_hist(self, filename):
-        spark      = self._get_spark()
-        DAILY_PATH = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/streaming/{self.today}_{filename}.parquet"
-        HIST_PATH  = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/{filename}"
-        daily      = spark.read.parquet(DAILY_PATH)
+        obj = self.s3.get_object(Bucket = "world-pool-bucket-version-1", Key= f"{self.niveau}/market//streaming/{self.today}_{filename}.parquet")
+        df = pd.read_parquet(io.BytesIO(obj['Body'].read()))
+        spark   = self._get_spark()
+        data_sp = spark.createDataFrame(df)
+        #日期里类型
+        data_sp = data_sp.withColumn("Date", F.to_date("Date")) 
+        #字符串类型，必秒java 要求ms 
+        daily   = data_sp.withColumn("dt", F.col("Date")) 
+        HIST_PATH  = f"s3a://world-pool-bucket-version-1/{self.niveau}/market/market_hist_currency_partition"
         rows       = daily.count()
         DeltaTable.forPath(spark, HIST_PATH).alias("L") \
         .merge(daily.alias("D"), "L.Date = D.Date AND L.ticker = D.ticker") \
